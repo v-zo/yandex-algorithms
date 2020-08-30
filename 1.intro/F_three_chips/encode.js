@@ -50,14 +50,14 @@ const rec = (data, N) => {
 
     for (i = 1; i < data.length; i++) {
         const curr = fun(data, N, i);
-        const sum = Math.abs(curr - N);
+        const diff = Math.abs(curr - N);
 
         if (curr === N) {
             return curr.toString();
         }
 
-        if (sum < clos) {
-            clos = sum;
+        if (diff < clos) {
+            clos = diff;
             res = curr;
         }
     }
@@ -73,4 +73,3 @@ const encode = (lines) => {
 }
 
 module.exports.encode = encode;
-module.exports.rec = rec;
