@@ -109,16 +109,12 @@ func (ps ProblemSolver) ProcessTail() ProblemSolver {
 		return ps
 	}
 
-	writeTail := func(homeCounter int) {
-		for i := 1; i <= homeCounter; i++ {
-			ps.writer.WriteString(strconv.Itoa(i))
-			if i < homeCounter {
-				ps.writer.WriteString(" ")
-			}
+	for i := 1; i <= ps.homeCounter; i++ {
+		ps.writer.WriteString(strconv.Itoa(i))
+		if i < ps.homeCounter {
+			ps.writer.WriteString(" ")
 		}
 	}
-
-	writeTail(ps.homeCounter)
 
 	return ps
 }
