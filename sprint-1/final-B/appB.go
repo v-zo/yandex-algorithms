@@ -87,6 +87,8 @@ func (ps ProblemSolver) ProcessBody() ProblemSolver {
 		}
 	}
 
+	ps.homeCounter = 0
+
 	for ps.scanner.Scan() {
 		home := ps.scanner.Text()
 
