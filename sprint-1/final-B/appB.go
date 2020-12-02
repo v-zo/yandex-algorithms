@@ -2,99 +2,79 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
-	"strconv"
-	"strings"
 )
 
 func main() {
 	file := openFile("input.txt")
-	sites, n := readData(file)
-	file.Close()
+	defer file.Close()
 
-	zeroesPositions := GetZeroesPositions(sites)
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords)
 
-	result := SolveProblem(zeroesPositions, n)
+	scanner.Scan()
+	//n, _ := strconv.Atoi(scanner.Text())
 
-	fmt.Println(intArrToStr(result))
-}
+	writer := bufio.NewWriter(os.Stdout)
 
-func SolveProblem(zeroesPositions []int, n int) []int {
-	totalZeroPositions := len(zeroesPositions)
-
-	var headSegment []int
-	if zeroesPositions[0] != 0 {
-		headSegment = MakeRangeReversed(zeroesPositions[0], 1)
+	writeHome := func(home string) {
+		writer.WriteString(home)
+		writer.WriteString(" ")
 	}
 
-	getSegment := func(i int) []int {
-		diff := zeroesPositions[i] - 1 - zeroesPositions[i-1]
-		radius := diff / 2
-
-		leftPart := MakeRange(0, radius)
-		rightPart := MakeRangeReversed(radius+diff%2, 1)
-
-		return append(leftPart, rightPart...)
-	}
-
-	var bodySegments []int
-	for i := 1; i < totalZeroPositions; i++ {
-		segment := getSegment(i)
-		bodySegments = append(bodySegments, segment...)
-	}
-
-	var tailSegment []int
-	lastZeroPosition := zeroesPositions[totalZeroPositions-1]
-	tailSegment = MakeRange(0, n-lastZeroPosition-1)
-
-	result := append(headSegment, bodySegments...)
-
-	return append(result, tailSegment...)
-}
-
-func MakeRange(start, stop int) []int {
-	dim := stop - start
-	a := make([]int, dim+1)
-
-	for i := range a {
-		a[i] = start + i
-	}
-
-	return a
-}
-
-func MakeRangeReversed(stop, start int) []int {
-	dim := stop - start
-	a := make([]int, dim+1)
-
-	for i := range a {
-		a[dim-i] = start + i
-	}
-
-	return a
-}
-
-func GetZeroesPositions(sites []string) []int {
-	var zeroesPositions []int
-	for position, homeNumber := range sites {
-		if homeNumber == "0" {
-			zeroesPositions = append(zeroesPositions, position)
+	writeBodySegment := func(homeCounter int) {
+		for i := 0; i < homeCounter; i++ {
+			writeHome("*")
 		}
 	}
 
-	return zeroesPositions
-}
+	writeHeadSegment := func(homeCounter int) {
+		for i := 0; i < homeCounter; i++ {
+			writeHome("x")
+		}
+	}
 
-func readData(inputFile *os.File) ([]string, int) {
-	scanner := bufio.NewScanner(inputFile)
-	scanner.Scan()
-	n, _ := strconv.Atoi(scanner.Text())
-	scanner.Scan()
-	line := scanner.Text()
-	sites := strings.Split(line, " ")
+	writeTailSegment := func(homeCounter int) {
+		for i := 0; i < homeCounter; i++ {
+			writer.WriteString("*")
+			if i < homeCounter-1 {
+				writer.WriteString(" ")
+			}
+		}
+	}
 
-	return sites, n
+	homeCounter := 0
+	isHead := true
+	for scanner.Scan() {
+		home := scanner.Text()
+
+		if home == "0" {
+			if homeCounter > 0 {
+				if isHead {
+					writeHeadSegment(homeCounter)
+				} else {
+					writeBodySegment(homeCounter)
+				}
+
+				isHead = false
+				homeCounter = 0
+			}
+
+			writeHome(home)
+		} else {
+			homeCounter++
+		}
+	}
+
+	if homeCounter > 0 {
+		writeTailSegment(homeCounter)
+	}
+
+	//writer.WriteString("\n")
+	writer.Flush()
+
+	//fmt.Println("\n")
+	//fmt.Println("2 1 0 1 2 1 0 1 0 0 1 0 0 1 0 1 2 1 0 1")
 }
 
 func openFile(path string) *os.File {
@@ -105,12 +85,4 @@ func openFile(path string) *os.File {
 	}
 
 	return file
-}
-
-func intArrToStr(result []int) string {
-	return strings.Trim(
-		strings.Replace(
-			fmt.Sprint(result),
-			" ", " ", -1),
-		"[]")
 }
