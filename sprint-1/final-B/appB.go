@@ -19,9 +19,9 @@ func main() {
 	problemSolver := createProblemSolver(file, os.Stdout)
 
 	problemSolver.
-		ProcessHeadSegment().
-		ProcessBodySegment().
-		ProcessTailSegment().
+		ProcessHead().
+		ProcessBody().
+		ProcessTail().
 		Finish()
 }
 
@@ -50,8 +50,8 @@ func (ps ProblemSolver) WriteStringWithSpace(str string) {
 	ps.writer.WriteString(" ")
 }
 
-func (ps ProblemSolver) ProcessHeadSegment() ProblemSolver {
-	writeHeadSegment := func(homeCounter int) {
+func (ps ProblemSolver) ProcessHead() ProblemSolver {
+	writeHead := func(homeCounter int) {
 		for i := homeCounter; i > 0; i-- {
 			ps.WriteStringWithSpace(strconv.Itoa(i))
 		}
@@ -62,7 +62,7 @@ func (ps ProblemSolver) ProcessHeadSegment() ProblemSolver {
 
 		if home == "0" {
 			if ps.homeCounter > 0 {
-				writeHeadSegment(ps.homeCounter)
+				writeHead(ps.homeCounter)
 			}
 
 			ps.WriteStringWithSpace(home)
@@ -75,10 +75,11 @@ func (ps ProblemSolver) ProcessHeadSegment() ProblemSolver {
 	return ps
 }
 
-func (ps ProblemSolver) ProcessBodySegment() ProblemSolver {
-	writeBodySegment := func(homeCounter int) {
+func (ps ProblemSolver) ProcessBody() ProblemSolver {
+	writeBody := func(homeCounter int) {
 		halfOfSegment := homeCounter / 2
-		for i := 1; i <= halfOfSegment+homeCounter%2; i++ {
+		halfOfSegmentPlusOne := halfOfSegment + homeCounter%2
+		for i := 1; i <= halfOfSegmentPlusOne; i++ {
 			ps.WriteStringWithSpace(strconv.Itoa(i))
 		}
 		for i := halfOfSegment; i > 0; i-- {
@@ -91,7 +92,7 @@ func (ps ProblemSolver) ProcessBodySegment() ProblemSolver {
 
 		if home == "0" {
 			if ps.homeCounter > 0 {
-				writeBodySegment(ps.homeCounter)
+				writeBody(ps.homeCounter)
 				ps.homeCounter = 0
 			}
 
@@ -104,12 +105,12 @@ func (ps ProblemSolver) ProcessBodySegment() ProblemSolver {
 	return ps
 }
 
-func (ps ProblemSolver) ProcessTailSegment() ProblemSolver {
+func (ps ProblemSolver) ProcessTail() ProblemSolver {
 	if ps.homeCounter == 0 {
 		return ps
 	}
 
-	writeTailSegment := func(homeCounter int) {
+	writeTail := func(homeCounter int) {
 		for i := 1; i <= homeCounter; i++ {
 			ps.writer.WriteString(strconv.Itoa(i))
 			if i < homeCounter {
@@ -118,7 +119,7 @@ func (ps ProblemSolver) ProcessTailSegment() ProblemSolver {
 		}
 	}
 
-	writeTailSegment(ps.homeCounter)
+	writeTail(ps.homeCounter)
 
 	return ps
 }
