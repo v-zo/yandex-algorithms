@@ -2,30 +2,27 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strconv"
 )
 
-type IOOperator struct {
-	scanner *bufio.Scanner
-	writer  *bufio.Writer
+type ProblemSolver struct {
+	scanner     *bufio.Scanner
+	writer      *bufio.Writer
+	homeCounter int
 }
 
 func main() {
 	file := openFile("input.txt")
 	defer file.Close()
 
-	ioOperator := createIOOperator(file, os.Stdout)
+	problemSolver := createProblemSolver(file, os.Stdout)
 
-	ioOperator.ProcessHeadSegment()
-	homeCounter := ioOperator.ProcessBodySegment()
-	ioOperator.ProcessTailSegment(homeCounter)
-
-	ioOperator.writer.WriteString("\n")
-	ioOperator.writer.Flush()
-
-	fmt.Println("0 0 1 0 0 0 0 1 0 0 1 2 1 0 1 0 1 0 0 0") // TODO: remove
+	problemSolver.
+		ProcessHeadSegment().
+		ProcessBodySegment().
+		ProcessTailSegment().
+		Finish()
 }
 
 func openFile(path string) *os.File {
@@ -38,88 +35,97 @@ func openFile(path string) *os.File {
 	return file
 }
 
-func createIOOperator(input *os.File, output *os.File) IOOperator {
+func createProblemSolver(input *os.File, output *os.File) ProblemSolver {
 	scanner := bufio.NewScanner(input)
 	scanner.Split(bufio.ScanWords)
-	scanner.Scan() // read useless n
+	scanner.Scan() // skip useless n
 
 	writer := bufio.NewWriter(output)
 
-	return IOOperator{scanner, writer}
+	return ProblemSolver{scanner, writer, 0}
 }
 
-func (ioOperator IOOperator) WriteStringWithSpace(str string) {
-	ioOperator.writer.WriteString(str)
-	ioOperator.writer.WriteString(" ")
+func (ps ProblemSolver) WriteStringWithSpace(str string) {
+	ps.writer.WriteString(str)
+	ps.writer.WriteString(" ")
 }
 
-func (ioOperator IOOperator) ProcessHeadSegment() {
+func (ps ProblemSolver) ProcessHeadSegment() ProblemSolver {
 	writeHeadSegment := func(homeCounter int) {
 		for i := homeCounter; i > 0; i-- {
-			ioOperator.WriteStringWithSpace(strconv.Itoa(i))
+			ps.WriteStringWithSpace(strconv.Itoa(i))
 		}
 	}
 
-	homeCounter := 0
-	for ioOperator.scanner.Scan() {
-		home := ioOperator.scanner.Text()
+	for ps.scanner.Scan() {
+		home := ps.scanner.Text()
 
 		if home == "0" {
-			if homeCounter > 0 {
-				writeHeadSegment(homeCounter)
+			if ps.homeCounter > 0 {
+				writeHeadSegment(ps.homeCounter)
 			}
 
-			ioOperator.WriteStringWithSpace(home)
+			ps.WriteStringWithSpace(home)
 			break
 		} else {
-			homeCounter++
+			ps.homeCounter++
 		}
 	}
+
+	return ps
 }
 
-func (ioOperator IOOperator) ProcessBodySegment() int {
+func (ps ProblemSolver) ProcessBodySegment() ProblemSolver {
 	writeBodySegment := func(homeCounter int) {
 		halfOfSegment := homeCounter / 2
 		for i := 1; i <= halfOfSegment+homeCounter%2; i++ {
-			ioOperator.WriteStringWithSpace(strconv.Itoa(i))
+			ps.WriteStringWithSpace(strconv.Itoa(i))
 		}
 		for i := halfOfSegment; i > 0; i-- {
-			ioOperator.WriteStringWithSpace(strconv.Itoa(i))
+			ps.WriteStringWithSpace(strconv.Itoa(i))
 		}
 	}
 
-	homeCounter := 0
-	for ioOperator.scanner.Scan() {
-		home := ioOperator.scanner.Text()
+	for ps.scanner.Scan() {
+		home := ps.scanner.Text()
 
 		if home == "0" {
-			if homeCounter > 0 {
-				writeBodySegment(homeCounter)
-				homeCounter = 0
+			if ps.homeCounter > 0 {
+				writeBodySegment(ps.homeCounter)
+				ps.homeCounter = 0
 			}
 
-			ioOperator.WriteStringWithSpace(home)
+			ps.WriteStringWithSpace(home)
 		} else {
-			homeCounter++
+			ps.homeCounter++
 		}
 	}
 
-	return homeCounter
+	return ps
 }
 
-func (ioOperator IOOperator) ProcessTailSegment(homeCounter int) {
-	if homeCounter == 0 {
-		return
+func (ps ProblemSolver) ProcessTailSegment() ProblemSolver {
+	if ps.homeCounter == 0 {
+		return ps
 	}
 
 	writeTailSegment := func(homeCounter int) {
 		for i := 1; i <= homeCounter; i++ {
-			ioOperator.writer.WriteString(strconv.Itoa(i))
+			ps.writer.WriteString(strconv.Itoa(i))
 			if i < homeCounter {
-				ioOperator.writer.WriteString(" ")
+				ps.writer.WriteString(" ")
 			}
 		}
 	}
 
-	writeTailSegment(homeCounter)
+	writeTailSegment(ps.homeCounter)
+
+	return ps
+}
+
+func (ps ProblemSolver) Finish() ProblemSolver {
+	ps.writer.WriteString("\n")
+	ps.writer.Flush()
+
+	return ps
 }
