@@ -57,20 +57,19 @@ func (ps ProblemSolver) ProcessHead() ProblemSolver {
 		}
 	}
 
-	for ps.scanner.Scan() {
-		home := ps.scanner.Text()
-
-		if home == "0" {
-			if ps.homeCounter > 0 {
-				writeHead(ps.homeCounter)
-			}
-
-			ps.WriteStringWithSpace(home)
-			break
-		} else {
-			ps.homeCounter++
-		}
+	var home string
+	counter := -1
+	for home != "0" {
+		ps.scanner.Scan()
+		home = ps.scanner.Text()
+		counter++
 	}
+
+	if counter > 0 {
+		writeHead(counter)
+	}
+
+	ps.WriteStringWithSpace(home)
 
 	return ps
 }
@@ -86,8 +85,6 @@ func (ps ProblemSolver) ProcessBody() ProblemSolver {
 			ps.WriteStringWithSpace(strconv.Itoa(i))
 		}
 	}
-
-	ps.homeCounter = 0
 
 	for ps.scanner.Scan() {
 		home := ps.scanner.Text()
