@@ -7,56 +7,52 @@ import (
 	"strconv"
 )
 
+type IOOperator struct {
+	scanner *bufio.Scanner
+	writer  *bufio.Writer
+}
+
 func main() {
 	file := openFile("input.txt")
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords)
-	scanner.Scan() // read useless n
-
-	writer := bufio.NewWriter(os.Stdout)
-
-	writeStringWithSpace := func(str string) {
-		writer.WriteString(str)
-		writer.WriteString(" ")
-	}
+	ioOperator := createIOOperator(file, os.Stdout)
 
 	writeHeadSegment := func(homeCounter int) {
 		for i := homeCounter; i > 0; i-- {
-			writeStringWithSpace(strconv.Itoa(i))
+			ioOperator.WriteStringWithSpace(strconv.Itoa(i))
 		}
 	}
 
 	writeBodySegment := func(homeCounter int) {
 		halfOfSegment := homeCounter / 2
 		for i := 1; i <= halfOfSegment+homeCounter%2; i++ {
-			writeStringWithSpace(strconv.Itoa(i))
+			ioOperator.WriteStringWithSpace(strconv.Itoa(i))
 		}
 		for i := halfOfSegment; i > 0; i-- {
-			writeStringWithSpace(strconv.Itoa(i))
+			ioOperator.WriteStringWithSpace(strconv.Itoa(i))
 		}
 	}
 
 	writeTailSegment := func(homeCounter int) {
 		for i := 1; i <= homeCounter; i++ {
-			writer.WriteString(strconv.Itoa(i))
+			ioOperator.writer.WriteString(strconv.Itoa(i))
 			if i < homeCounter {
-				writer.WriteString(" ")
+				ioOperator.writer.WriteString(" ")
 			}
 		}
 	}
 
 	homeCounter := 0
-	for scanner.Scan() {
-		home := scanner.Text()
+	for ioOperator.scanner.Scan() {
+		home := ioOperator.scanner.Text()
 
 		if home == "0" {
 			if homeCounter > 0 {
 				writeHeadSegment(homeCounter)
 			}
 
-			writeStringWithSpace(home)
+			ioOperator.WriteStringWithSpace(home)
 			break
 		} else {
 			homeCounter++
@@ -64,8 +60,8 @@ func main() {
 	}
 
 	homeCounter = 0
-	for scanner.Scan() {
-		home := scanner.Text()
+	for ioOperator.scanner.Scan() {
+		home := ioOperator.scanner.Text()
 
 		if home == "0" {
 			if homeCounter > 0 {
@@ -73,7 +69,7 @@ func main() {
 				homeCounter = 0
 			}
 
-			writeStringWithSpace(home)
+			ioOperator.WriteStringWithSpace(home)
 		} else {
 			homeCounter++
 		}
@@ -83,8 +79,8 @@ func main() {
 		writeTailSegment(homeCounter)
 	}
 
-	writer.WriteString("\n")
-	writer.Flush()
+	ioOperator.writer.WriteString("\n")
+	ioOperator.writer.Flush()
 
 	fmt.Println("0 0 1 0 0 0 0 1 0 0 1 2 1 0 1 0 1 0 0 0") // TODO: remove
 }
@@ -97,4 +93,19 @@ func openFile(path string) *os.File {
 	}
 
 	return file
+}
+
+func createIOOperator(input *os.File, output *os.File) IOOperator {
+	scanner := bufio.NewScanner(input)
+	scanner.Split(bufio.ScanWords)
+	scanner.Scan() // read useless n
+
+	writer := bufio.NewWriter(output)
+
+	return IOOperator{scanner, writer}
+}
+
+func (ioOperator IOOperator) WriteStringWithSpace(str string) {
+	ioOperator.writer.WriteString(str)
+	ioOperator.writer.WriteString(" ")
 }
