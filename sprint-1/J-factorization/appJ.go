@@ -20,7 +20,14 @@ func main() {
 }
 
 func FindFactors(n int, writer *bufio.Writer) {
-	for i := 2; i <= n; i++ {
+	if n%2 == 0 {
+		writer.WriteString("2")
+		writer.WriteString(" ")
+		FindFactors(n/2, writer)
+
+		return
+	}
+	for i := 3; i <= n; i += 2 {
 		if n%i == 0 {
 			writer.WriteString(strconv.Itoa(i))
 			writer.WriteString(" ")
