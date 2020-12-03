@@ -20,21 +20,28 @@ func main() {
 }
 
 func FindFactors(n int, writer *bufio.Writer) {
-	if n%2 == 0 {
-		writer.WriteString("2")
+	writeWithSpace := func(num int) {
+		writer.WriteString(strconv.Itoa(num))
 		writer.WriteString(" ")
+	}
+
+	if n%2 == 0 {
+		writeWithSpace(2)
 		FindFactors(n/2, writer)
 
 		return
 	}
-	for i := 3; i <= n; i += 2 {
+	for i := 3; i*i <= n; i += 2 {
 		if n%i == 0 {
-			writer.WriteString(strconv.Itoa(i))
-			writer.WriteString(" ")
+			writeWithSpace(i)
 			FindFactors(n/i, writer)
 
 			return
 		}
+	}
+
+	if n != 1 {
+		writeWithSpace(n)
 	}
 }
 
