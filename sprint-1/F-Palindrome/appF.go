@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -13,7 +14,7 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanRunes)
-	var stringBuilder strings.Builder
+	var stringBuilder bytes.Buffer
 	for scanner.Scan() {
 		char := scanner.Text()
 
