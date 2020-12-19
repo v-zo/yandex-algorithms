@@ -39,7 +39,7 @@ func (stack *Stack) top() int {
 
 func (stack *Stack) push(x int) {
 	val := x
-	if x >= stack.max {
+	if x > stack.max {
 		val = 2*x - stack.max
 		stack.max = x
 	}
@@ -53,21 +53,12 @@ func (stack *Stack) pop() string {
 	}
 
 	val := stack.top()
-	if val >= stack.max {
+	if val > stack.max {
 		stack.max = 2*stack.max - val
 	}
 
 	stack.data = stack.data[:len(stack.data)-1]
 	return ""
-}
-
-func (stack *Stack) peek() int {
-	val := stack.top()
-	if val > stack.max {
-		return stack.max
-	}
-
-	return val
 }
 
 func (stack *Stack) getMax() string {
