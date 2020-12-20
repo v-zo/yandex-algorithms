@@ -1,6 +1,6 @@
 package main
 
-import "dep"
+//import "dep"
 
 //import (
 //	Lib "./lib"
@@ -8,6 +8,6 @@ import "dep"
 //)
 
 func main() {
-	dep.Dep()
+	//dep.Dep()
 	//Lib.Show()
 }
