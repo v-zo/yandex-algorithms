@@ -14,6 +14,7 @@ package main
 import (
 	"bufio"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -28,15 +29,49 @@ func main() {
 
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	scanner := bufio.NewScanner(reader)
-	scanner.Split(bufio.ScanRunes)
+	scanner.Split(bufio.ScanWords)
+	scanner.Scan()
+
+	ch := scanner.Text()
+	stack := &Stack{&Node{ch, nil}}
 
 	for scanner.Scan() {
-		writer.WriteString(scanner.Text())
+		//writer.WriteString(scanner.Text())
+		ch = scanner.Text()
+
+		isOperator := strings.Contains("+-*/", ch)
+
+		if isOperator {
+
+		} else {
+			stack.push(ch)
+		}
+
+		//writer.WriteString(stack.head.value)
 	}
 
-	writer.WriteString("\n")
+	//writer.WriteString("\n")
 
 	writer.Flush()
+}
+
+type Node struct {
+	value string
+	prev  *Node
+}
+
+type Stack struct {
+	head *Node
+}
+
+func (st *Stack) push(val string) {
+	st.head = &Node{val, st.head}
+}
+
+func (st *Stack) pop() string {
+	st.head = &Node{st.head.value, st.head.prev}
+
+	return st.head.value
 }
 
 func openFile(path string) *os.File {
