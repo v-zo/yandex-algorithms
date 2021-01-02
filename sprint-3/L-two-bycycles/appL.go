@@ -50,22 +50,10 @@ func findDay(amounts string, start int, end int, bikeCost int) int {
 		return end
 	}
 
-	if end-start == 2 {
-		if getEl(amounts, start) >= bikeCost {
-			return start
-		}
-
-		if getEl(amounts, start+1) >= bikeCost {
-			return start + 1
-		}
-
-		return end
-	}
-
-	if getEl(amounts, end/2) >= bikeCost {
-		return findDay(amounts, start, end/2, bikeCost)
+	if getEl(amounts, end-(end-start)/2) >= bikeCost {
+		return findDay(amounts, start, end-(end-start)/2, bikeCost)
 	} else {
-		return findDay(amounts, end/2+1, end, bikeCost)
+		return findDay(amounts, end-(end-start)/2+1, end, bikeCost)
 	}
 }
 
