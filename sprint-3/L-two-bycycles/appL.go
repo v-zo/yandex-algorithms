@@ -18,20 +18,12 @@ func main() {
 }
 
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
-	line1, _ := reader.ReadString('\n')
-	line2, _ := reader.ReadString('\n')
-	line3, _ := reader.ReadString('\n')
-
-	days, _ := strconv.Atoi(strings.Trim(line1, "\n"))
-	amounts := strings.Trim(line2, "\n")
-	bikeCost, _ := strconv.Atoi(line3)
+	days, amounts, bikeCost := readData(reader)
 
 	res1 := findDay(amounts, 0, days-1, bikeCost)
 	res2 := findDay(amounts, res1, days-1, 2*bikeCost)
 
-	r1, r2 := conv(res1), conv(res2)
-
-	writer.WriteString(r1 + " " + r2)
+	writer.WriteString(strconv.Itoa(1+res1) + " " + strconv.Itoa(1+res2))
 	writer.WriteString("\n")
 	writer.Flush()
 }
@@ -41,17 +33,9 @@ func getEl(s string, n int) int {
 	return a
 }
 
-func conv(i int) string {
-	if i == -1 {
-		return "-1"
-	}
-
-	return strconv.Itoa(i + 1)
-}
-
 func findDay(amounts string, start int, end int, bikeCost int) int {
 	if getEl(amounts, end) < bikeCost {
-		return -1
+		return -2
 	}
 
 	if end == start {
@@ -83,6 +67,18 @@ func findDay(amounts string, start int, end int, bikeCost int) int {
 	} else {
 		return findDay(amounts, end/2+1, end, bikeCost)
 	}
+}
+
+func readData(reader *bufio.Reader) (days int, amounts string, bikeCost int) {
+	line1, _ := reader.ReadString('\n')
+	line2, _ := reader.ReadString('\n')
+	line3, _ := reader.ReadString('\n')
+
+	days, _ = strconv.Atoi(strings.Trim(line1, "\n"))
+	amounts = strings.Trim(line2, "\n")
+	bikeCost, _ = strconv.Atoi(line3)
+
+	return
 }
 
 func openFile(path string) *os.File {
