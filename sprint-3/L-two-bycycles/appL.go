@@ -21,7 +21,10 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	days, amounts, bikeCost := readData(reader)
 
 	res1 := findDay(amounts, 0, days-1, bikeCost)
-	res2 := findDay(amounts, res1, days-1, 2*bikeCost)
+	res2 := -2
+	if res1 != -2 {
+		res2 = findDay(amounts, res1, days-1, 2*bikeCost)
+	}
 
 	writer.WriteString(strconv.Itoa(1+res1) + " " + strconv.Itoa(1+res2))
 	writer.WriteString("\n")
@@ -38,22 +41,19 @@ func findDay(amounts string, start int, end int, bikeCost int) int {
 		return -2
 	}
 
-	if end == start {
+	if getEl(amounts, start) >= bikeCost {
 		return start
 	}
 
-	if end-start == 1 {
-		if getEl(amounts, start) >= bikeCost {
-			return start
-		}
-
+	if end == start || end-start == 1 {
 		return end
 	}
 
-	if getEl(amounts, end-(end-start)/2) >= bikeCost {
-		return findDay(amounts, start, end-(end-start)/2, bikeCost)
+	mid := end - (end-start)/2
+	if getEl(amounts, mid) >= bikeCost {
+		return findDay(amounts, start, mid, bikeCost)
 	} else {
-		return findDay(amounts, end-(end-start)/2+1, end, bikeCost)
+		return findDay(amounts, mid+1, end, bikeCost)
 	}
 }
 

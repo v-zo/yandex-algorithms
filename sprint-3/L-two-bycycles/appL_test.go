@@ -28,6 +28,7 @@ func TestSolution(t *testing.T) {
 		"8\n1 2 6 6 6 6 6 6\n3": "3 3",
 		"8\n1 1 1 2 2 2 2 2\n3": "-1 -1",
 		"8\n1 1 1 2 3 4 5 5\n3": "5 -1",
+		"7\n8 8 8 8 8 8 8\n3":   "1 1",
 	}
 
 	for k, v := range cases {
