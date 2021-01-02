@@ -26,7 +26,8 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	amounts := strings.Trim(line2, "\n")
 	bikeCost, _ := strconv.Atoi(line3)
 
-	res1, res2 := findTwoDays(amounts, days, bikeCost)
+	res1 := findDay(amounts, 0, days-1, bikeCost)
+	res2 := findDay(amounts, res1, days-1, 2*bikeCost)
 
 	r1, r2 := conv(res1), conv(res2)
 
@@ -46,36 +47,6 @@ func conv(i int) string {
 	}
 
 	return strconv.Itoa(i + 1)
-}
-
-func findTwoDays(amounts string, days int, bikeCost int) (res1 int, res2 int) {
-	res2 = -1
-	res1 = -1
-
-	if days == 1 {
-		a := getEl(amounts, 0)
-		if a >= bikeCost {
-			res1 = 0
-		}
-		if a >= 2*bikeCost {
-			res2 = 0
-		}
-
-		return
-	}
-
-	last := getEl(amounts, days-1)
-	if last < bikeCost {
-		return
-	}
-
-	res1 = findDay(amounts, 0, days-1, bikeCost)
-
-	if last >= 2*bikeCost {
-		res2 = findDay(amounts, res1, days-1, 2*bikeCost)
-	}
-
-	return
 }
 
 func findDay(amounts string, start int, end int, bikeCost int) int {
