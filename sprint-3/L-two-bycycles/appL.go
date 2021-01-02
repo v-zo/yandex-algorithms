@@ -23,17 +23,21 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	line3, _ := reader.ReadString('\n')
 
 	days, _ := strconv.Atoi(strings.Trim(line1, "\n"))
-	amounts := strings.Split(strings.Trim(line2, "\n"), " ")
+	amounts := strings.Trim(line2, "\n")
 	bikeCost, _ := strconv.Atoi(line3)
 
 	res1, res2 := findTwoDays(amounts, days, bikeCost)
 
-	r1 := conv(res1)
-	r2 := conv(res2)
+	r1, r2 := conv(res1), conv(res2)
 
 	writer.WriteString(r1 + " " + r2)
 	writer.WriteString("\n")
 	writer.Flush()
+}
+
+func getEl(s string, n int) int {
+	a, _ := strconv.Atoi(string(s[2*n]))
+	return a
 }
 
 func conv(i int) string {
@@ -44,12 +48,12 @@ func conv(i int) string {
 	return strconv.Itoa(i + 1)
 }
 
-func findTwoDays(amounts []string, days int, bikeCost int) (res1 int, res2 int) {
+func findTwoDays(amounts string, days int, bikeCost int) (res1 int, res2 int) {
 	res2 = -1
 	res1 = -1
 
 	if days == 1 {
-		a, _ := strconv.Atoi(amounts[0])
+		a := getEl(amounts, 0)
 		if a >= bikeCost {
 			res1 = 0
 		}
@@ -60,7 +64,7 @@ func findTwoDays(amounts []string, days int, bikeCost int) (res1 int, res2 int) 
 		return
 	}
 
-	last, _ := strconv.Atoi(amounts[days-1])
+	last := getEl(amounts, days-1)
 	if last < bikeCost {
 		return
 	}
@@ -74,9 +78,8 @@ func findTwoDays(amounts []string, days int, bikeCost int) (res1 int, res2 int) 
 	return
 }
 
-func findDay(amounts []string, start int, end int, bikeCost int) int {
-	aEnd, _ := strconv.Atoi(amounts[end])
-	if aEnd < bikeCost {
+func findDay(amounts string, start int, end int, bikeCost int) int {
+	if getEl(amounts, end) < bikeCost {
 		return -1
 	}
 
@@ -85,8 +88,7 @@ func findDay(amounts []string, start int, end int, bikeCost int) int {
 	}
 
 	if end-start == 1 {
-		aStart, _ := strconv.Atoi(amounts[start])
-		if aStart >= bikeCost {
+		if getEl(amounts, start) >= bikeCost {
 			return start
 		}
 
@@ -94,21 +96,18 @@ func findDay(amounts []string, start int, end int, bikeCost int) int {
 	}
 
 	if end-start == 2 {
-		aStart, _ := strconv.Atoi(amounts[start])
-		if aStart >= bikeCost {
+		if getEl(amounts, start) >= bikeCost {
 			return start
 		}
 
-		aStartOne, _ := strconv.Atoi(amounts[start+1])
-		if aStartOne >= bikeCost {
+		if getEl(amounts, start+1) >= bikeCost {
 			return start + 1
 		}
 
 		return end
 	}
 
-	aEndHalf, _ := strconv.Atoi(amounts[end/2])
-	if aEndHalf >= bikeCost {
+	if getEl(amounts, end/2) >= bikeCost {
 		return findDay(amounts, start, end/2, bikeCost)
 	} else {
 		return findDay(amounts, end/2+1, end, bikeCost)
