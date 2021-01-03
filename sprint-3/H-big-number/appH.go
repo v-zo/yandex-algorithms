@@ -23,7 +23,9 @@ type Sortable []string
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	_, arr := readData(reader)
 
-	sort.Sort(arr)
+	sort.Slice(arr, func(i, j int) bool {
+		return compare(arr[i], arr[j])
+	})
 
 	writer.WriteString(strings.Join(arr, ""))
 	writer.WriteString("\n")
@@ -47,12 +49,6 @@ func compare(a string, b string) bool {
 	}
 
 	return a > b
-}
-
-func (s Sortable) Len() int      { return len(s) }
-func (s Sortable) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
-func (s Sortable) Less(i, j int) bool {
-	return compare(s[i], s[j])
 }
 
 func readData(reader *bufio.Reader) (int, Sortable) {
