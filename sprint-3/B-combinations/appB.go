@@ -28,27 +28,24 @@ func main() {
 }
 
 type Comb struct {
-	result string
+	result []string
 	knobs  []string
 }
 
 func (c *Comb) combine(currentKnobIndex int) {
+	currentKnob := c.knobs[currentKnobIndex]
+	currentKnobArr := strings.Split(currentKnob, "")
+
 	if currentKnobIndex == 0 {
-		c.result = strings.Join(
-			strings.Split(
-				c.knobs[currentKnobIndex],
-				""),
-			" ")
+		c.result = currentKnobArr
 	} else {
-		spr := strings.Split(c.result, " ")
 		var newRes []string
-		for _, s := range spr {
-			currentKnob := c.knobs[currentKnobIndex]
+		for _, s := range c.result {
 			for i := 0; i < len(currentKnob); i++ {
-				newRes = append(newRes, s+string(currentKnob[i]))
+				newRes = append(newRes, s+currentKnobArr[i])
 			}
 		}
-		c.result = strings.Join(newRes, " ")
+		c.result = newRes
 	}
 
 	if currentKnobIndex == len(c.knobs)-1 {
@@ -67,10 +64,10 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 		knobs = append(knobs, knobsValue)
 	}
 
-	c := &Comb{"", knobs}
+	c := &Comb{nil, knobs}
 	c.combine(0)
 
-	writer.WriteString(c.result)
+	writer.WriteString(strings.Join(c.result, " "))
 	writer.WriteString("\n")
 
 	writer.Flush()
