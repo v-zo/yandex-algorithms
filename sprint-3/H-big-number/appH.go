@@ -52,9 +52,7 @@ func compare(a string, b string) bool {
 func (s Sortable) Len() int      { return len(s) }
 func (s Sortable) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s Sortable) Less(i, j int) bool {
-	a, b := s[i], s[j]
-
-	return compare(a, b)
+	return compare(s[i], s[j])
 }
 
 func readData(reader *bufio.Reader) (int, Sortable) {
