@@ -30,14 +30,14 @@ func merge(arr []int, lf int, mid int, rg int) (result []int) {
 	}
 }
 
-func merge_sort(arr *[]int, lf int, rg int) {
+func merge_sort(arr []int, lf int, rg int) {
 	if rg == lf {
 		return
 	}
 
 	if rg-lf == 1 {
-		if (*arr)[lf] > (*arr)[rg] {
-			(*arr)[lf], (*arr)[rg] = (*arr)[rg], (*arr)[lf]
+		if arr[lf] > arr[rg] {
+			arr[lf], arr[rg] = arr[rg], arr[lf]
 		}
 		return
 	}
@@ -47,7 +47,10 @@ func merge_sort(arr *[]int, lf int, rg int) {
 	merge_sort(arr, lf, mid-1)
 	merge_sort(arr, mid, rg)
 
-	*arr = merge(*arr, lf, mid, rg)
+	merged := merge(arr, lf, mid, rg)
+	for i, m := range merged {
+		arr[i] = m
+	}
 }
 
 func main() {
