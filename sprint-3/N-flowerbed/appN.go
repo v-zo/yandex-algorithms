@@ -1,12 +1,9 @@
-/*
-~Doesnt work
-*/
+/* Doesnt work */
 
 package main
 
 import (
 	"bufio"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -28,13 +25,13 @@ type Segment struct {
 }
 
 type FB struct {
-	s []Segment
+	lows  []int
+	highs []int
 }
 
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
-	scanner.Scan()
 	scanner.Scan()
 
 	readPair := func() (segment Segment) {
@@ -51,101 +48,53 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 
 	for scanner.Scan() {
 		segment := readPair()
-		fbs.intersect(segment, 0)
+		fbs.insert(segment)
 	}
 
-	for _, fb := range fbs.s {
-		writer.WriteString(strconv.Itoa(fb.lo) + " " + strconv.Itoa(fb.hi))
-		writer.WriteString("\n")
-	}
+	//for _, fb := range fbs.s {
+	//	writer.WriteString(strconv.Itoa(fb.lo) + " " + strconv.Itoa(fb.hi))
+	//	writer.WriteString("\n")
+	//}
 
 	writer.Flush()
 }
 
-func (fbs *FB) intersect(seg Segment, st int) *FB {
-	if len(fbs.s) == st {
-		fbs.s = append(fbs.s, seg)
-		return fbs
-	}
+func (fbs *FB) insert(seg Segment) {
+	start := insertionIndex(fbs.highs, seg.hi)
+	end := insertionIndex(fbs.lows, seg.lo)
 
-	for i := st; i < len(fbs.s); i++ {
-		rel := compare(seg, fbs.s[i])
-
-		if rel == equal {
-			return fbs
-		}
-
-		if rel == more {
-			newFbs := append(fbs.s[:i+1], seg)
-			fbs.s = append(newFbs, fbs.s[i+1:]...)
-			fbs.s = fbs.intersect(seg, i+1).s
-
-			return fbs
-		}
-
-		if rel == intersect {
-			newSeg := join(fbs.s[i], seg)
-
-			fbs.s[i] = newSeg
-			fbs.s = fbs.intersect(newSeg, i).s
-
-			return fbs
-		}
-	}
-
-	fbs.s = append([]Segment{seg}, fbs.s...)
-	return fbs
+	fbs.lows = add(fbs.lows, start, end, seg.lo)
+	fbs.highs = add(fbs.highs, start, end, seg.hi)
 }
 
-type Rel int
+func add(arr []int, start int, end int, el int) []int {
+	if len(arr) == 0 {
+		return []int{el}
+	}
 
-const (
-	less Rel = iota
-	more
-	intersect
-	equal
-)
+	arr = append(arr[:start], el)
+	if start < len(arr)-1 {
+		arr = append(arr, arr[end:]...)
+	}
 
-func join(a Segment, b Segment) Segment {
-	return Segment{min(a.lo, b.lo), max(a.hi, b.hi)}
+	return arr
 }
 
-func compare(a Segment, b Segment) Rel {
-	if a.hi == b.hi && a.lo == b.lo {
-		return equal
+func insertionIndex(arr []int, el int) int {
+	if len(arr) == 0 {
+		return 0
 	}
 
-	if a.hi < b.lo {
-		return less
-	}
-
-	if a.lo > b.hi {
-		return more
-	}
-
-	return intersect
-}
-
-func max(nums ...int) (result int) {
-	result = math.MinInt64
-	for _, num := range nums {
-		if num > result {
-			result = num
+	for i, item := range arr {
+		if item == el {
+			return i - 1
+		}
+		if item > el {
+			return i
 		}
 	}
 
-	return
-}
-
-func min(nums ...int) (result int) {
-	result = math.MaxInt64
-	for _, num := range nums {
-		if num < result {
-			result = num
-		}
-	}
-
-	return
+	return len(arr)
 }
 
 func openFile(path string) *os.File {
