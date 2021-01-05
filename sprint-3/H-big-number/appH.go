@@ -34,18 +34,8 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 }
 
 func compare(a string, b string) bool {
-	if len(a) > len(b) {
-		delta := len(a) - len(b)
-		bNew := b + a[:delta]
-
-		return a > bNew
-	}
-
-	if len(a) < len(b) {
-		delta := len(b) - len(a)
-		aNew := a + b[:delta]
-
-		return aNew > b
+	if len(a) != len(b) {
+		return a+b > b+a
 	}
 
 	return a > b
