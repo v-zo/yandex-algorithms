@@ -1,9 +1,13 @@
+/*
+~Doesnt work
+*/
+
 package main
 
 import (
 	"bufio"
+	"math"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -18,72 +22,126 @@ func main() {
 	Solve(reader, writer)
 }
 
+type Segment struct {
+	lo int
+	hi int
+}
+
+type FB struct {
+	s []Segment
+}
+
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 	scanner.Scan()
 	scanner.Scan()
 
-	readFb := func() (start int, end int) {
+	readPair := func() (segment Segment) {
 		line := scanner.Text()
 		fields := strings.Fields(line)
-		start, _ = strconv.Atoi(fields[0])
-		end, _ = strconv.Atoi(fields[1])
+		start, _ := strconv.Atoi(fields[0])
+		end, _ := strconv.Atoi(fields[1])
+		segment = Segment{start, end}
 
 		return
 	}
 
-	var fbs [][2]int
-	seedStart, seedEnd := readFb()
-	fbs = append(fbs, [2]int{seedStart, seedEnd})
+	var fbs FB
 
 	for scanner.Scan() {
-		start, end := readFb()
-		merged := mergeFb(fbs, start, end)
-
-		if !merged {
-			fbs = append(fbs, [2]int{start, end})
-		}
+		segment := readPair()
+		fbs.intersect(segment, 0)
 	}
 
-	sort.Slice(fbs, func(i, j int) bool {
-		return fbs[i][0] < fbs[j][0]
-	})
-
-	for _, fb := range fbs {
-		writer.WriteString(strconv.Itoa(fb[0]) + " " + strconv.Itoa(fb[1]))
+	for _, fb := range fbs.s {
+		writer.WriteString(strconv.Itoa(fb.lo) + " " + strconv.Itoa(fb.hi))
 		writer.WriteString("\n")
 	}
 
 	writer.Flush()
 }
 
-func mergeFb(fbs [][2]int, start int, end int) (merged bool) {
-	merged = false
+func (fbs *FB) intersect(seg Segment, st int) *FB {
+	if len(fbs.s) == st {
+		fbs.s = append(fbs.s, seg)
+		return fbs
+	}
 
-	for i, pair := range fbs {
-		L := pair[0]
-		R := pair[1]
+	for i := st; i < len(fbs.s); i++ {
+		rel := compare(seg, fbs.s[i])
 
-		if start <= L && end >= L {
-			fbs[i][0] = start
-			if end >= R {
-				fbs[i][1] = end
-			} else {
-				fbs[i][1] = R
-			}
-
-			merged = true
+		if rel == equal {
+			return fbs
 		}
-		if start >= L && start <= R {
-			fbs[i][0] = L
-			if end >= R {
-				fbs[i][1] = end
-			} else {
-				fbs[i][1] = R
-			}
 
-			merged = true
+		if rel == more {
+			newFbs := append(fbs.s[:i+1], seg)
+			fbs.s = append(newFbs, fbs.s[i+1:]...)
+			fbs.s = fbs.intersect(seg, i+1).s
+
+			return fbs
+		}
+
+		if rel == intersect {
+			newSeg := join(fbs.s[i], seg)
+
+			fbs.s[i] = newSeg
+			fbs.s = fbs.intersect(newSeg, i).s
+
+			return fbs
+		}
+	}
+
+	fbs.s = append([]Segment{seg}, fbs.s...)
+	return fbs
+}
+
+type Rel int
+
+const (
+	less Rel = iota
+	more
+	intersect
+	equal
+)
+
+func join(a Segment, b Segment) Segment {
+	return Segment{min(a.lo, b.lo), max(a.hi, b.hi)}
+}
+
+func compare(a Segment, b Segment) Rel {
+	if a.hi == b.hi && a.lo == b.lo {
+		return equal
+	}
+
+	if a.hi < b.lo {
+		return less
+	}
+
+	if a.lo > b.hi {
+		return more
+	}
+
+	return intersect
+}
+
+func max(nums ...int) (result int) {
+	result = math.MinInt64
+	for _, num := range nums {
+		if num > result {
+			result = num
+		}
+	}
+
+	return
+}
+
+func min(nums ...int) (result int) {
+	result = math.MaxInt64
+	for _, num := range nums {
+		if num < result {
+			result = num
 		}
 	}
 

@@ -11,6 +11,7 @@ func TestSolution(t *testing.T) {
 		"4\n7 8\n7 8\n2 3\n6 10":           "2 3\n6 10",
 		"4\n2 3\n5 6\n3 4\n3 4":            "2 4\n5 6",
 		"6\n1 3\n3 5\n4 6\n5 6\n2 4\n7 10": "1 6\n7 10",
+		"5\n2 4\n5 6\n3 4\n3 8\n1 5":       "1 8",
 	}
 
 	for k, v := range cases {
