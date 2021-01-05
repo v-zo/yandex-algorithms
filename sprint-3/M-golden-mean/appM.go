@@ -28,7 +28,7 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 }
 
 func solve(n int, m int, north *bufio.Scanner, south *bufio.Scanner) (output string) {
-	size := (n + m) / 2
+	size := (n+m)/2 + 1
 
 	scanNum := func(scanner *bufio.Scanner) (num int) {
 		scanner.Scan()
@@ -37,41 +37,65 @@ func solve(n int, m int, north *bufio.Scanner, south *bufio.Scanner) (output str
 		return
 	}
 
+	left := scanNum(north)
+	right := scanNum(south)
+
 	var merged []int
 
-	a := scanNum(north)
-	b := scanNum(south)
-	last := 0
-	for i := 0; i < size; i++ {
-		if a < b {
-			merged = append(merged, a)
-			a = scanNum(north)
-			last = b
+	i := 0
+	j := 0
+	for i+j+1 <= size {
+		if left < right {
+			merged = append(merged, left)
+			left = scanNum(north)
+			i++
 		} else {
-			merged = append(merged, b)
-			b = scanNum(south)
-			last = a
+			merged = append(merged, right)
+			right = scanNum(south)
+			j++
+		}
+
+		if i == n {
+			tail := size - i - j
+			for k := 0; k < tail; k++ {
+				merged = append(merged, right)
+				right = scanNum(south)
+			}
+
+			break
+		}
+
+		if j == m {
+			tail := size - i - j
+			for k := 0; k < tail; k++ {
+				merged = append(merged, left)
+				left = scanNum(north)
+			}
+
+			break
 		}
 	}
 
 	if (n+m)%2 == 0 {
-		output = getEvenOutput(last + merged[size-1])
+		output = getEvenOutput(merged[size-1] + merged[size-2])
 	} else {
-		output = strconv.Itoa(last)
+		output = getOddOutput(merged[size-1])
 	}
 
 	return
 }
 
-func getEvenOutput(num int) (output string) {
+func getEvenOutput(num int) string {
 	s2 := strconv.Itoa(num / 2)
 	if num%2 == 1 {
-		output = s2 + "." + "5"
+		return s2 + "." + "5"
 	} else {
-		output = s2
+		return s2
 	}
+}
 
-	return
+func getOddOutput(num int) string {
+	return strconv.Itoa(num)
 }
 
 func readData(reader *bufio.Reader) (n int, m int, north *bufio.Scanner, south *bufio.Scanner) {
@@ -84,7 +108,6 @@ func readData(reader *bufio.Reader) (n int, m int, north *bufio.Scanner, south *
 	m, _ = strconv.Atoi(strings.TrimRight(line2, "\n"))
 
 	createScanner := func(line string) *bufio.Scanner {
-		//str := strings.TrimRight(line, "\n")
 		strReader := strings.NewReader(line)
 		strBufReader := bufio.NewReader(strReader)
 		scanner := bufio.NewScanner(strBufReader)
