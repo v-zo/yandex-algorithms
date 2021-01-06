@@ -12,7 +12,6 @@
 
 - mid в "малом" отрезке (mid=4) 4 5 6 1 2 3
 									    ^
-
 */
 
 package main
@@ -51,7 +50,6 @@ type IntList struct {
 
 func (list IntList) getEl(i int) (value int) {
 	value, _ = strconv.Atoi(list.str[i])
-
 	return
 }
 
@@ -70,6 +68,7 @@ func binarySearch(elements IntList, st int, end int, k int) int {
 	if endEl == k {
 		return end
 	}
+
 	if stEl == k {
 		return st
 	}
@@ -85,8 +84,18 @@ func binarySearch(elements IntList, st int, end int, k int) int {
 		return mid
 	}
 
-	side := undef
-	if midEl < endEl { // lesser
+	switch getSide(stEl, midEl, endEl, k) {
+	case left:
+		return binarySearch(elements, st, mid-1, k)
+	case right:
+		return binarySearch(elements, mid+1, end, k)
+	default:
+		return -1
+	}
+}
+
+func getSide(stEl int, midEl int, endEl int, k int) (side Side) {
+	if midEl < endEl { // lesser (right) segment
 		if k < midEl {
 			side = left
 		} else {
@@ -96,7 +105,7 @@ func binarySearch(elements IntList, st int, end int, k int) int {
 				side = left
 			}
 		}
-	} else { // greater
+	} else { // greater (left) segment
 		if k > midEl {
 			side = right
 		} else {
@@ -108,14 +117,11 @@ func binarySearch(elements IntList, st int, end int, k int) int {
 		}
 	}
 
-	switch side {
-	case left:
-		return binarySearch(elements, st, mid-1, k)
-	case right:
-		return binarySearch(elements, mid+1, end, k)
-	default:
+	if side == undef {
 		panic("side is undefined")
 	}
+
+	return
 }
 
 func readData(reader *bufio.Reader) (n int, k int, elements IntList) {
