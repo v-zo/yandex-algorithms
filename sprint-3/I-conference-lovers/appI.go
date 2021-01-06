@@ -64,9 +64,9 @@ func readData(reader *bufio.Reader) (n int, sc *bufio.Scanner, k int) {
 	line2, _ := reader.ReadString('\n')
 	line3, _ := reader.ReadString('\n')
 
-	n, _ = strconv.Atoi(line1)
+	n, _ = strconv.Atoi(strings.TrimRight(line1, "\n"))
 	sc = createWordsScanner(line2)
-	k, _ = strconv.Atoi(line3)
+	k, _ = strconv.Atoi(strings.TrimRight(line3, "\n"))
 
 	return
 }
