@@ -39,51 +39,64 @@ func (list IntList) getEl(i int) (value int) {
 }
 
 func binarySearch(elements IntList, st int, end int, k int) int {
-	if end-st <= 1 {
-		if elements.getEl(end) == k {
-			return end
-		}
-		if elements.getEl(st) == k {
-			return st
-		}
+	if elements.getEl(end) == k {
+		return end
+	}
+	if elements.getEl(st) == k {
+		return st
+	}
 
+	if end-st <= 1 {
 		return -1
 	}
 
 	mid := (st + end) / 2
+	midEl := elements.getEl(mid)
 
-	if elements.getEl(mid) == k {
+	if midEl == k {
 		return mid
 	}
 
-	onTail := elements.getEl(mid) > elements.getEl(end)
-	onHead := !onTail
-	kOnLeft := elements.getEl(mid) > k
-	kOnRight := !kOnLeft
+	side := "left"
+	if midEl < elements.getEl(end) { // lesser
+		if midEl > k {
+			if k > elements.getEl(st) {
 
-	if (onTail && kOnLeft) || (onHead && kOnLeft) {
-		return binarySearch(elements, st, mid-1, k)
+			} else {
+				side = "right"
+			}
+		} else {
+			side = "right"
+		}
+	} else { // greater
+		if midEl > k {
+			if k > elements.getEl(st) {
+
+			} else {
+				side = "right"
+			}
+		} else {
+			side = "right"
+		}
 	}
 
-	if (onTail && kOnRight) || (onHead && kOnRight) {
+	if side == "left" {
+		return binarySearch(elements, st, mid-1, k)
+	} else {
 		return binarySearch(elements, mid+1, end, k)
 	}
 
-	//if elements[mid] > elements[end] {
-	//	if elements[mid] > k {
-	//		return binarySearch(elements, st, mid-1, k)
-	//	} else {
+	//if midEl > k {
+	//	if midEl < elements.getEl(end) {
 	//		return binarySearch(elements, mid+1, end, k)
 	//	}
+	//	return binarySearch(elements, mid+1, end, k)
 	//} else {
-	//	if elements[mid] < k {
-	//		return binarySearch(elements, mid+1, end, k)
-	//	} else {
+	//	if midEl > elements.getEl(end) {
 	//		return binarySearch(elements, st, mid-1, k)
 	//	}
+	//	return binarySearch(elements, mid+1, end, k)
 	//}
-
-	return -1
 }
 
 func readData(reader *bufio.Reader) (n int, k int, elements IntList) {
