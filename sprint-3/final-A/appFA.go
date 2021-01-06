@@ -1,3 +1,20 @@
+/*
+- все упорядочены 1 2 3
+
+- k в "большом" отрезке (k=5) 4 5 6 1 2 3
+								^
+
+- k в "малом" отрезке (k=2) 4 5 6 1 2 3
+									^
+
+- mid в "большом" отрезке (mid=1) 4 5 6 1 2 3
+									^
+
+- mid в "малом" отрезке (mid=4) 4 5 6 1 2 3
+									    ^
+
+*/
+
 package main
 
 import (
@@ -38,11 +55,22 @@ func (list IntList) getEl(i int) (value int) {
 	return
 }
 
+type Side int
+
+const (
+	undef Side = iota
+	left
+	right
+)
+
 func binarySearch(elements IntList, st int, end int, k int) int {
-	if elements.getEl(end) == k {
+	stEl := elements.getEl(st)
+	endEl := elements.getEl(end)
+
+	if endEl == k {
 		return end
 	}
-	if elements.getEl(st) == k {
+	if stEl == k {
 		return st
 	}
 
@@ -57,46 +85,37 @@ func binarySearch(elements IntList, st int, end int, k int) int {
 		return mid
 	}
 
-	side := "left"
-	if midEl < elements.getEl(end) { // lesser
-		if midEl > k {
-			if k > elements.getEl(st) {
-
-			} else {
-				side = "right"
-			}
+	side := undef
+	if midEl < endEl { // lesser
+		if k < midEl {
+			side = left
 		} else {
-			side = "right"
+			if k < endEl {
+				side = right
+			} else {
+				side = left
+			}
 		}
 	} else { // greater
-		if midEl > k {
-			if k > elements.getEl(st) {
-
-			} else {
-				side = "right"
-			}
+		if k > midEl {
+			side = right
 		} else {
-			side = "right"
+			if k > stEl {
+				side = left
+			} else {
+				side = right
+			}
 		}
 	}
 
-	if side == "left" {
+	switch side {
+	case left:
 		return binarySearch(elements, st, mid-1, k)
-	} else {
+	case right:
 		return binarySearch(elements, mid+1, end, k)
+	default:
+		panic("side is undefined")
 	}
-
-	//if midEl > k {
-	//	if midEl < elements.getEl(end) {
-	//		return binarySearch(elements, mid+1, end, k)
-	//	}
-	//	return binarySearch(elements, mid+1, end, k)
-	//} else {
-	//	if midEl > elements.getEl(end) {
-	//		return binarySearch(elements, st, mid-1, k)
-	//	}
-	//	return binarySearch(elements, mid+1, end, k)
-	//}
 }
 
 func readData(reader *bufio.Reader) (n int, k int, elements IntList) {
