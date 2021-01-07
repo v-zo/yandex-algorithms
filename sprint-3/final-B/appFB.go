@@ -28,9 +28,21 @@ func main() {
 	Solve(reader, writer)
 }
 
+type Interface interface {
+	Less(i, j int) bool
+	Swap(i, j int)
+	Len() int
+}
+
+type Leaderboard struct {
+	data []int
+}
+
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	arr := []int{0, 0, 1, 0, 0, 1}
-	quickSort(arr, 0, 5)
+	var lb Interface = Leaderboard{arr}
+	//lb =
+	quickSort(lb, 0, 5)
 
 	fmt.Println(arr)
 	//writer.WriteString("\n")
@@ -38,48 +50,53 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	//writer.Flush()
 }
 
-func quickSort(arr []int, lo int, hi int) {
+func (lb Leaderboard) Less(i, j int) bool {
+	return lb.data[i] < lb.data[j]
+}
+
+func (lb Leaderboard) Swap(i int, j int) {
+	lb.data[i], lb.data[j] = lb.data[j], lb.data[i]
+}
+
+func (lb Leaderboard) Len() int {
+	return len(lb.data)
+}
+
+func quickSort(data Interface, lo int, hi int) {
 	if hi-lo <= 1 {
-		if arr[lo] > arr[hi] {
-			swap(arr, lo, hi)
+		if data.Less(hi, lo) {
+			data.Swap(lo, hi)
 		}
 
 		return
 	}
 
 	m := (lo + hi) / 2
-	pivot := arr[m]
 
 	i := lo
 	j := hi
 
 	for {
-		for ; arr[i] < pivot && i < j-1; i++ {
+		for ; data.Less(i, m) && i < j-1; i++ {
 		}
-		for ; !(arr[j] < pivot) && i < j-1; j-- {
+		for ; !data.Less(j, m) && i < j-1; j-- {
 		}
 
 		if j-i == 1 {
 			break
 		}
 
-		swap(arr, i, j)
+		data.Swap(i, j)
 	}
 
-	quickSort(arr, lo, m)
-	quickSort(arr, m, hi)
-}
-
-func swap(arr []int, i int, j int) {
-	arr[i], arr[j] = arr[j], arr[i]
+	quickSort(data, lo, m)
+	quickSort(data, m, hi)
 }
 
 func openFile(path string) *os.File {
 	file, err := os.Open(path)
-
 	if err != nil {
 		panic(err)
 	}
-
 	return file
 }

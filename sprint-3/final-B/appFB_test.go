@@ -42,7 +42,8 @@ func TestQuickSort(t *testing.T) {
 
 	for _, v := range cases {
 		cp := append([]int{}, v.input...)
-		quickSort(cp, 0, len(cp)-1)
+		var lb Interface = Leaderboard{cp}
+		quickSort(lb, 0, lb.Len()-1)
 
 		if !reflect.DeepEqual(v.expected, cp) {
 			t.Errorf("\ncase:\n%v\n got: %v\nwant: %v", v.input, cp, v.expected)
