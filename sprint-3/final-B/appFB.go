@@ -46,78 +46,79 @@ type Leaderboard struct {
 }
 
 ///////
-type SortableInt []int
-
-type Case struct {
-	input    SortableInt
-	expected SortableInt
-}
-
-func (c SortableInt) Less(i, j int) bool {
-	return c[i] < c[j]
-}
-
-func (c SortableInt) Swap(i int, j int) {
-	c[i], c[j] = c[j], c[i]
-}
-
-func (c SortableInt) Len() int {
-	return len(c)
-}
-
-///////
+//type SortableInt []int
+//
+//type Case struct {
+//	input    SortableInt
+//	expected SortableInt
+//}
+//
+//func (c SortableInt) Less(i, j int) bool {
+//	return c[i] < c[j]
+//}
+//
+//func (c SortableInt) Swap(i int, j int) {
+//	c[i], c[j] = c[j], c[i]
+//}
+//
+//func (c SortableInt) Len() int {
+//	return len(c)
+//}
+//
+/////////
 
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
-	//lb := readData(reader)
-	//lb.Sort()
-	quickSort(SortableInt{3, 5, 10, 4, 1}, 0, 4)
+	lb := readData(reader)
+	lb.Sort()
+	//si := SortableInt{3, 5, 10, 4, 1}
+	//si := SortableInt{3, 2, 4, 1}
+	//
+	//quickSort(si, 0, 3)
+	//fmt.Println(si)
+
 	//printLeaderBoard(lb, writer)
 }
 
 func quickSort(data Sortable, lo int, hi int) {
-	if hi-lo <= 1 {
-		if data.Less(hi, lo) {
-			data.Swap(lo, hi)
-		}
-
+	if hi <= lo {
 		return
 	}
 
-	m := (lo + hi) / 2
+	p := partition(data, lo, hi)
+
+	quickSort(data, lo, p)
+	quickSort(data, p+1, hi)
+}
+
+func partition(data Sortable, lo int, hi int) int {
+	p := (lo + hi) / 2
 
 	i := lo
 	j := hi
 
 	for {
-		for ; data.Less(i, m) && i < j-1; i++ {
+		for ; data.Less(i, p); i++ {
 		}
 
-		if j-i == 1 {
-			break
+		for ; data.Less(p, j); j-- {
 		}
 
-		for ; !data.Less(j, m) && i < j-1; j-- {
-		}
-
-		if j-i == 1 {
-			break
+		if i >= j {
+			return j
 		}
 
 		data.Swap(i, j)
 
-		oldM := m
+		oldM := p
 
 		if i == oldM {
-			m = j
+			p = j
 		}
 
 		if j == oldM {
-			m = i
+			p = i
 		}
 	}
-
-	quickSort(data, lo, m)
-	quickSort(data, m, hi)
 }
 
 //func medianOfThree(data Sortable, m1, m0, m2 int) {
