@@ -31,12 +31,12 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	writer.Flush()
 }
 
-func getEl(s string, n int) int {
-	a, _ := strconv.Atoi(string(s[2*n]))
+func getEl(s []string, n int) int {
+	a, _ := strconv.Atoi(s[n])
 	return a
 }
 
-func findDay(amounts string, start int, end int, bikeCost int) int {
+func findDay(amounts []string, start int, end int, bikeCost int) int {
 	if getEl(amounts, end) < bikeCost {
 		return -2
 	}
@@ -57,13 +57,13 @@ func findDay(amounts string, start int, end int, bikeCost int) int {
 	}
 }
 
-func readData(reader *bufio.Reader) (days int, amounts string, bikeCost int) {
+func readData(reader *bufio.Reader) (days int, amounts []string, bikeCost int) {
 	line1, _ := reader.ReadString('\n')
 	line2, _ := reader.ReadString('\n')
 	line3, _ := reader.ReadString('\n')
 
 	days, _ = strconv.Atoi(strings.Trim(line1, "\n"))
-	amounts = strings.Trim(line2, "\n")
+	amounts = strings.Split(strings.Trim(line2, "\n"), " ")
 	bikeCost, _ = strconv.Atoi(line3)
 
 	return
