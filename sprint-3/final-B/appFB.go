@@ -15,7 +15,6 @@ package main
 import (
 	"bufio"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -30,6 +29,12 @@ func main() {
 	Solve(reader, writer)
 }
 
+type Sortable interface {
+	Len() int
+	Less(i, j int) bool
+	Swap(i, j int)
+}
+
 type Entry struct {
 	name string
 	prob int
@@ -40,13 +45,36 @@ type Leaderboard struct {
 	data []Entry
 }
 
-func Solve(reader *bufio.Reader, writer *bufio.Writer) {
-	lb := readData(reader)
-	lb.Sort()
-	printLeaderBoard(lb, writer)
+///////
+type SortableInt []int
+
+type Case struct {
+	input    SortableInt
+	expected SortableInt
 }
 
-func quickSort(data sort.Interface, lo int, hi int) {
+func (c SortableInt) Less(i, j int) bool {
+	return c[i] < c[j]
+}
+
+func (c SortableInt) Swap(i int, j int) {
+	c[i], c[j] = c[j], c[i]
+}
+
+func (c SortableInt) Len() int {
+	return len(c)
+}
+
+///////
+
+func Solve(reader *bufio.Reader, writer *bufio.Writer) {
+	//lb := readData(reader)
+	//lb.Sort()
+	quickSort(SortableInt{3, 5, 10, 4, 1}, 0, 4)
+	//printLeaderBoard(lb, writer)
+}
+
+func quickSort(data Sortable, lo int, hi int) {
 	if hi-lo <= 1 {
 		if data.Less(hi, lo) {
 			data.Swap(lo, hi)
@@ -63,6 +91,11 @@ func quickSort(data sort.Interface, lo int, hi int) {
 	for {
 		for ; data.Less(i, m) && i < j-1; i++ {
 		}
+
+		if j-i == 1 {
+			break
+		}
+
 		for ; !data.Less(j, m) && i < j-1; j-- {
 		}
 
@@ -71,11 +104,33 @@ func quickSort(data sort.Interface, lo int, hi int) {
 		}
 
 		data.Swap(i, j)
+
+		oldM := m
+
+		if i == oldM {
+			m = j
+		}
+
+		if j == oldM {
+			m = i
+		}
 	}
 
 	quickSort(data, lo, m)
 	quickSort(data, m, hi)
 }
+
+//func medianOfThree(data Sortable, m1, m0, m2 int) {
+//	if data.Less(m1, m0) {
+//		data.Swap(m1, m0)
+//	}
+//	if data.Less(m2, m1) {
+//		data.Swap(m2, m1)
+//		if data.Less(m1, m0) {
+//			data.Swap(m1, m0)
+//		}
+//	}
+//}
 
 func (lb *Leaderboard) Sort() {
 	quickSort(lb, 0, lb.Len()-1)
