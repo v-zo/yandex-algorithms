@@ -27,7 +27,7 @@ func merge(arr []int, lf int, mid int, rg int) (result []int) {
 }
 
 func merge_sort(arr []int, lf int, rg int) {
-	if rg == lf || rg-lf == 1 || len(arr) == 1 {
+	if rg == lf || rg-lf == 1 {
 		return
 	}
 
