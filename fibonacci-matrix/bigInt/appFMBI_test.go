@@ -73,21 +73,12 @@ func TestFibonacciMatrix(t *testing.T) {
 	}
 }
 
-var from = 20000
-var to = 20000
+var P = 20000
 
 func BenchmarkFibonacci(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		for n := from; n <= to; n++ {
-			fibonacciBigInt(n)
-		}
-	}
+	BenchFib(b.N, P, fibonacciBigInt)
 }
 
 func BenchmarkFibonacciMatrix(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		for n := from; n <= to; n++ {
-			fibonacciMatrix(n)
-		}
-	}
+	BenchFib(b.N, P, fibonacciMatrix)
 }

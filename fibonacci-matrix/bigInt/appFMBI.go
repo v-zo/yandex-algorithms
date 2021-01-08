@@ -3,10 +3,43 @@ package main
 import (
 	"fmt"
 	"math/big"
+	"testing"
+)
+
+const (
+	from = 200
+	to   = 2200
 )
 
 func main() {
-	fmt.Println(fibonacciMatrix(5))
+	delta := (to - from) / 10
+	var (
+		data, dataM []int64
+	)
+
+	for n := from; n < to; n += delta {
+		fmt.Printf("\033[2K\r%s%d...", "running fibonacciBigInt bench, n=", n)
+		res := testing.Benchmark(func(b *testing.B) {
+			BenchFib(b.N, n, fibonacciBigInt)
+		})
+		data = append(data, res.NsPerOp())
+
+		fmt.Printf("\033[2K\r%s%d...", "running fibonacciMatrix bench, n=", n)
+		resM := testing.Benchmark(func(b *testing.B) {
+			BenchFib(b.N, n, fibonacciMatrix)
+		})
+		dataM = append(dataM, resM.NsPerOp())
+	}
+
+	fmt.Printf("\033[2K\r")
+	fmt.Println(data)
+	fmt.Println(dataM)
+}
+
+func BenchFib(N, p int, fn func(int) *big.Int) {
+	for i := 0; i < N; i++ {
+		fn(p)
+	}
 }
 
 func newBigInt(n int) *big.Int {
