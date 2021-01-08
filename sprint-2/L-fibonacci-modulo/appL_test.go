@@ -19,7 +19,7 @@ func TestApp(t *testing.T) {
 		fields := strings.Fields(input)
 		n, _ := strconv.Atoi(fields[0])
 		m, _ := strconv.Atoi(fields[1])
-		res := fibonacciModulo(n, m, 1, 0, 0)
+		res := fibonacciModulo(n, m, 1, 0)
 		if expected != res {
 			t.Errorf("\ncase:\n%s\n got: %d\nwant: %d", input, res, expected)
 		}

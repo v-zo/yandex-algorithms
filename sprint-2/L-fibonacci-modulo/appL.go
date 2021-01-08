@@ -21,7 +21,7 @@ func main() {
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	n, k := readData(reader)
 
-	result := fibonacciModulo(n, k, 1, 0, 0)
+	result := fibonacciModulo(n, k, 1, 0)
 
 	writer.WriteString(strconv.Itoa(result))
 	writer.WriteString("\n")
@@ -33,12 +33,13 @@ func powInt(x, y int) int {
 	return int(math.Pow(float64(x), float64(y)))
 }
 
-func fibonacciModulo(n, k, p, p0, index int) int {
-	if index == n {
-		return p
+func fibonacciModulo(n, k, p, p0 int) int {
+	for i := 0; i < n; i++ {
+		p, p0 = p0, p
+		p = (p + p0) % powInt(10, k)
 	}
 
-	return fibonacciModulo(n, k, (p+p0)%powInt(10, k), p, index+1)
+	return p
 }
 
 func readData(reader *bufio.Reader) (n, k int) {
