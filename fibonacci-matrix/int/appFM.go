@@ -9,7 +9,7 @@ func main() {
 
 	//fmt.Println(powInt(2, 8))
 
-	fmt.Println(fibonacciMatrix(3))
+	fmt.Println(fibonacciMatrix(5))
 }
 
 func powInt(x, y int) (p int) {
@@ -38,11 +38,19 @@ func createUnitMatrix(size int) (M [][]int) {
 }
 
 func matrixPower(A [][]int, n int) (p [][]int) {
+	if n == 1 {
+		return A
+	}
+
 	p = createUnitMatrix(len(A))
+
+	if n == 0 {
+		return p
+	}
 
 	for n != 0 {
 		if n%2 != 0 {
-			p = product(A, A)
+			p = product(p, A)
 		}
 
 		A = product(A, A)
@@ -53,9 +61,15 @@ func matrixPower(A [][]int, n int) (p [][]int) {
 }
 
 func fibonacciMatrix(n int) int {
-	F := [][]int{{1, 1}, {0, 1}}
+	if n == 0 || n == 1 {
+		return 1
+	}
 
-	return matrixPower(F, n)[0][0]
+	F := [][]int{{1, 1}, {1, 0}}
+
+	mp := matrixPower(F, n)
+
+	return mp[0][0]
 }
 
 func product(A, B [][]int) (prod [][]int) {
