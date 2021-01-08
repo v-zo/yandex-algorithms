@@ -1,37 +1,15 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strconv"
-	"strings"
-)
+import "fmt"
 
 func main() {
-	file := openFile("input.txt")
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	writer := bufio.NewWriter(os.Stdout)
-
-	Solve(reader, writer)
-}
-
-func Solve(reader *bufio.Reader, writer *bufio.Writer) {
-	//n, k := readData(reader)
-	//result := fibonacciModulo(n, k, 1, 0)
-	//
-	//writer.WriteString(strconv.Itoa(result))
-	//writer.WriteString("\n")
-	//
-	//writer.Flush()
-
 	//A := [][]int{[]int{1,2},[]int{3,4}}
 	//B := [][]int{[]int{2,0},[]int{1,2}}
 	//fmt.Println(product(A,B))
 
-	fmt.Println(powInt(2, 8))
+	//fmt.Println(powInt(2, 8))
+
+	fmt.Println(fibonacciMatrix(3))
 }
 
 func powInt(x, y int) (p int) {
@@ -49,22 +27,41 @@ func powInt(x, y int) (p int) {
 	return
 }
 
-func fibonacciModulo(n, k, p, p0 int) int {
-	for i := 0; i < n; i++ {
-		p, p0 = p0, p
-		p = (p + p0) % powInt(10, k)
+func createUnitMatrix(size int) (M [][]int) {
+	M = NewMatrix(size)
+
+	for i := 0; i < size; i++ {
+		M[i][i] = 1
 	}
 
-	return p
+	return
+}
+
+func matrixPower(A [][]int, n int) (p [][]int) {
+	p = createUnitMatrix(len(A))
+
+	for n != 0 {
+		if n%2 != 0 {
+			p = product(A, A)
+		}
+
+		A = product(A, A)
+		n /= 2
+	}
+
+	return
+}
+
+func fibonacciMatrix(n int) int {
+	F := [][]int{{1, 1}, {0, 1}}
+
+	return matrixPower(F, n)[0][0]
 }
 
 func product(A, B [][]int) (prod [][]int) {
 	n := len(A)
 
-	prod = make([][]int, n)
-	for i := range prod {
-		prod[i] = make([]int, n)
-	}
+	prod = NewMatrix(n)
 
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
@@ -77,19 +74,20 @@ func product(A, B [][]int) (prod [][]int) {
 	return
 }
 
-func readData(reader *bufio.Reader) (n, k int) {
-	line1, _ := reader.ReadString('\n')
-	fields := strings.Fields(strings.TrimRight(line1, "\n"))
-	n, _ = strconv.Atoi(fields[0])
-	k, _ = strconv.Atoi(fields[1])
+func NewMatrix(n int) [][]int {
+	M := make([][]int, n)
+	for i := range M {
+		M[i] = make([]int, n)
+	}
 
-	return
+	return M
 }
 
-func openFile(path string) *os.File {
-	file, err := os.Open(path)
-	if err != nil {
-		panic(err)
+func fibonacci(n, p, p0 int) int {
+	for i := 0; i < n; i++ {
+		p, p0 = p0, p
+		p = p + p0
 	}
-	return file
+
+	return p
 }
