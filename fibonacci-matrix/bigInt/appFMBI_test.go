@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math"
 	"reflect"
 	"testing"
 )
@@ -19,9 +18,9 @@ func TestProduct(t *testing.T) {
 	}
 
 	for _, mCase := range cases {
-		R := product(mCase.A, mCase.B)
+		R := product(FromInt(mCase.A), FromInt(mCase.B))
 
-		if !reflect.DeepEqual(mCase.E, R) {
+		if !reflect.DeepEqual(FromInt(mCase.E), R) {
 			t.Errorf("\ncase:\n%v x %v\n got: %v\nwant: %v", mCase.A, mCase.B, R, mCase.E)
 		}
 	}
@@ -43,75 +42,44 @@ func TestMatrixPower(t *testing.T) {
 	}
 
 	for _, mCase := range cases {
-		R := matrixPower(mCase.A, mCase.n)
+		R := matrixPower(FromInt(mCase.A), mCase.n)
 
-		if !reflect.DeepEqual(mCase.E, R) {
+		if !reflect.DeepEqual(FromInt(mCase.E), R) {
 			t.Errorf("\ncase:\n%v^%v\n got: %v\nwant: %v", mCase.A, mCase.n, R, mCase.E)
 		}
 	}
 }
 
-func TestPowInt(t *testing.T) {
-	cases := [][]int{
-		{3, 3},
-		{2, 2},
-		{2, 8},
-		{2, 5},
-		{3, 8},
-		{3, 4},
-		{2, 7},
-	}
+func TestFibonacciBigInt(t *testing.T) {
+	cases := []int{1, 1, 2, 3, 5, 8, 13, 21, 34}
 
-	for _, inp := range cases {
-		x, y := inp[0], inp[1]
-		r := powInt(x, y)
-		exp := int(math.Pow(float64(x), float64(y)))
+	for n, exp := range cases {
+		r := fibonacciBigInt(n)
 
-		if r != exp {
-			t.Errorf("\ncase:\n%v^%v\n got: %v\nwant: %v", x, y, r, exp)
-		}
-	}
-}
-
-func TestFibonacci(t *testing.T) {
-	cases := [][]int{
-		{0, 1},
-		{1, 1},
-		{2, 2},
-		{3, 3},
-		{4, 5},
-		{5, 8},
-		{6, 13},
-	}
-
-	for _, inp := range cases {
-		n, exp := inp[0], inp[1]
-		r := fibonacci(n, 1, 0)
-
-		if r != exp {
-			t.Errorf("\ncase:\n%d\n got: %d\nwant: %d", n, r, exp)
+		if r.Cmp(newBigInt(exp)) != 0 {
+			t.Errorf("\ncase: %d\n got: %d\nwant: %d", n, r, exp)
 		}
 	}
 }
 
 func TestFibonacciMatrix(t *testing.T) {
-	for i := 0; i <= 20; i++ {
+	for i := 0; i <= 7; i++ {
 		r := fibonacciMatrix(i)
-		exp := fibonacci(i, 1, 0)
+		exp := fibonacciBigInt(i)
 
-		if r != exp {
+		if r.Cmp(exp) != 0 {
 			t.Errorf("\ncase:\n%d\n got: %d\nwant: %d", i, r, exp)
 		}
 	}
 }
 
-var from = 50
-var to = 92
+var from = 20000
+var to = 20000
 
 func BenchmarkFibonacci(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for n := from; n <= to; n++ {
-			fibonacci(n, 1, 0)
+			fibonacciBigInt(n)
 		}
 	}
 }
