@@ -1,39 +1,63 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math/big"
+	"os"
+	"strconv"
+	"sync"
 	"testing"
+	"text/template"
 )
 
 const (
 	from = 200
 	to   = 2200
+	dots = 200
 )
 
+type Entry struct {
+	X string
+	Y string
+}
+
 func main() {
-	delta := (to - from) / 10
-	var (
-		data, dataM []int64
-	)
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go writeBenchData(fibonacciBigInt, "data.txt", &wg)
+	go writeBenchData(fibonacciMatrix, "dataM.txt", &wg)
+	wg.Wait()
+}
+
+func writeBenchData(fn func(int) *big.Int, fileName string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	const entry = "{{`{`}}{{ .X }},{{ .Y  }}{{`},`}}"
+	t := template.Must(template.New("entry").Parse(entry))
+
+	file := createFile(fileName)
+	defer file.Close()
+	w := bufio.NewWriter(file)
+
+	delta := (to - from) / dots
 
 	for n := from; n < to; n += delta {
-		fmt.Printf("\033[2K\r%s%d...", "running fibonacciBigInt bench, n=", n)
-		res := testing.Benchmark(func(b *testing.B) {
-			BenchFib(b.N, n, fibonacciBigInt)
-		})
-		data = append(data, res.NsPerOp())
+		fmt.Printf("\033[2K\r%s%d...", "running bench, n=", n)
 
-		fmt.Printf("\033[2K\r%s%d...", "running fibonacciMatrix bench, n=", n)
-		resM := testing.Benchmark(func(b *testing.B) {
-			BenchFib(b.N, n, fibonacciMatrix)
+		res := testing.Benchmark(func(b *testing.B) {
+			BenchFib(b.N, n, fn)
 		})
-		dataM = append(dataM, resM.NsPerOp())
+
+		y := strconv.Itoa(int(res.NsPerOp()))
+		x := strconv.Itoa(n)
+		point := Entry{x, y}
+		t.Execute(w, point)
 	}
 
 	fmt.Printf("\033[2K\r")
-	fmt.Println(data)
-	fmt.Println(dataM)
+	w.Flush()
+	fmt.Printf("Done.\n")
 }
 
 func BenchFib(N, p int, fn func(int) *big.Int) {
@@ -88,7 +112,7 @@ func FromInt(A [][]int) [][]*big.Int {
 	return M
 }
 
-func createUnitMatrix(size int) [][]*big.Int {
+func CreateUnitMatrix(size int) [][]*big.Int {
 	M := NewMatrixBigInt(size)
 
 	for i := 0; i < size; i++ {
@@ -121,7 +145,7 @@ func matrixPower(A [][]*big.Int, n int) [][]*big.Int {
 		return A
 	}
 
-	p := createUnitMatrix(len(A))
+	p := CreateUnitMatrix(len(A))
 
 	if n == 0 {
 		return p
@@ -147,4 +171,12 @@ func fibonacciMatrix(n int) *big.Int {
 	F := FromInt([][]int{{1, 1}, {1, 0}})
 
 	return matrixPower(F, n)[0][0]
+}
+
+func createFile(path string) *os.File {
+	file, err := os.Create(path)
+	if err != nil {
+		panic(err)
+	}
+	return file
 }
