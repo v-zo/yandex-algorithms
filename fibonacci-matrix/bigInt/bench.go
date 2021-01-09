@@ -22,11 +22,15 @@ type Entry struct {
 	Y string
 }
 
+var tmpl *template.Template
+
+func init() {
+	const entry = "{{`{`}}{{ .X }},{{ .Y  }}{{`},`}}"
+	tmpl = template.Must(template.New("entry").Parse(entry))
+}
+
 func writeBenchData(fn func(int) *big.Int, fileName string, wg *sync.WaitGroup) {
 	defer wg.Done()
-
-	const entry = "{{`{`}}{{ .X }},{{ .Y  }}{{`},`}}"
-	t := template.Must(template.New("entry").Parse(entry))
 
 	file := createFile(fileName)
 	defer file.Close()
@@ -34,17 +38,17 @@ func writeBenchData(fn func(int) *big.Int, fileName string, wg *sync.WaitGroup) 
 
 	delta := (to - from) / dots
 
-	for n := from; n < to; n += delta {
+	for n := from; n <= to; n += delta {
 		fmt.Printf("\033[2K\r%s%d...", "running bench, n=", n)
 
 		res := testing.Benchmark(func(b *testing.B) {
-			BenchFib(b.N, n, fn)
+			benchFib(b.N, n, fn)
 		})
 
 		y := strconv.Itoa(int(res.NsPerOp()))
 		x := strconv.Itoa(n)
 		point := Entry{x, y}
-		t.Execute(w, point)
+		tmpl.Execute(w, point)
 	}
 
 	fmt.Printf("\033[2K\r")
@@ -52,7 +56,7 @@ func writeBenchData(fn func(int) *big.Int, fileName string, wg *sync.WaitGroup) 
 	fmt.Printf("Done.\n")
 }
 
-func BenchFib(N, p int, fn func(int) *big.Int) {
+func benchFib(N, p int, fn func(int) *big.Int) {
 	for i := 0; i < N; i++ {
 		fn(p)
 	}

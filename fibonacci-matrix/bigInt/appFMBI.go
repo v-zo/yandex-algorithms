@@ -27,8 +27,8 @@ func fibonacciMatrix(n int) *big.Int {
 	return matrixPower(F, n)[0][0]
 }
 
-func findFib(n int, p, p0 *big.Int) *big.Int {
-	for i := 0; i < n; i++ {
+func findFib(f int, p, p0 *big.Int) *big.Int {
+	for i := 0; i < f; i++ {
 		p, p0 = p0, p
 		p.Add(p, p0)
 	}

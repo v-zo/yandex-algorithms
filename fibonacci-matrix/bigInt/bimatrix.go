@@ -2,7 +2,7 @@ package main
 
 import "math/big"
 
-func NewMatrixBigInt(n int) (M [][]*big.Int) {
+func newMatrixBigInt(n int) (M [][]*big.Int) {
 	M = make([][]*big.Int, n)
 	for i := range M {
 		M[i] = make([]*big.Int, n)
@@ -28,7 +28,7 @@ func FromInt(A [][]int) [][]*big.Int {
 }
 
 func createUnitMatrix(size int) [][]*big.Int {
-	M := NewMatrixBigInt(size)
+	M := newMatrixBigInt(size)
 
 	for i := 0; i < size; i++ {
 		M[i][i] = NewBigInt(1)
@@ -40,7 +40,7 @@ func createUnitMatrix(size int) [][]*big.Int {
 func product(A, B [][]*big.Int) [][]*big.Int {
 	n := len(A)
 
-	prod := NewMatrixBigInt(n)
+	prod := newMatrixBigInt(n)
 
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {

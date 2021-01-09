@@ -76,9 +76,9 @@ func TestFibonacciMatrix(t *testing.T) {
 var P = 20000
 
 func BenchmarkFibonacci(b *testing.B) {
-	BenchFib(b.N, P, fibonacciBigInt)
+	benchFib(b.N, P, fibonacciBigInt)
 }
 
 func BenchmarkFibonacciMatrix(b *testing.B) {
-	BenchFib(b.N, P, fibonacciMatrix)
+	benchFib(b.N, P, fibonacciMatrix)
 }
