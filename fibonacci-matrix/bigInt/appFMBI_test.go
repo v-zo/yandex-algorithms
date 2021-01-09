@@ -56,7 +56,7 @@ func TestFibonacciBigInt(t *testing.T) {
 	for n, exp := range cases {
 		r := fibonacciBigInt(n)
 
-		if r.Cmp(newBigInt(exp)) != 0 {
+		if r.Cmp(NewBigInt(exp)) != 0 {
 			t.Errorf("\ncase: %d\n got: %d\nwant: %d", n, r, exp)
 		}
 	}
