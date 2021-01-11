@@ -1,12 +1,30 @@
 /*
 
-посылка ******
+посылка https://contest.yandex.ru/contest/23815/run-report/46455563/
 
 -- ПРИНЦИП РАБОТЫ --
+	Данное решение воспроизводит алгоритм in-place quick sort, уже описанный в задании.
+	Для выбора опорного элемента мы используем метод medianOfThree - это позволяет существенно
+уменьшить вероятность наткнуться на killer последовательность, в частности если исходный массив
+изначально отсортирован. При таком подходе нужно дополнительно следить за тем, что если произошло перемещение
+опорного элемента, то нужно соответсвенно менять и индекс-указатель на него.
+Эту проверку мы делаем после вызова data.Swap(i, j).
+	Для хранения опрного элемента мы не используем отдельной переменной - а храним лишь индекс-указатель
+на элемент в массиве. Так сделано для того, чтобы использовать абстрактный метод Less(i,j), не зависящий
+от конкретной имплементации интерфейса Sortable.
+Эти идеи были подсмотрены в исходниках пакета sort
 
 -- ДОКАЗАТЕЛЬСТВО КОРРЕКТНОСТИ --
+	На каждой стадии рекурсии мы делим исходный массив на две части, а затем меняем местами элементы таким образом,
+что в конце получаем что в одной части все элементы меньше чем любой элемент другой части. Если это повторять
+рекурсивно то в конце концов мы придем к тому что исходный массив полностью отсортируется.
 
 -- ВРЕМЕННАЯ СЛОЖНОСТЬ --
+	Алгоритм quick sort довольно популярен и его сложность изучена и известна.
+В худшем случае O(n*n) - это если неповезет с выбором опорного элемента настолько, что все partition стадии
+будут выделять массыв лишь с одним элементом и по итогу мы на каждой итерции будем вынуждены проходить по всему массиву.
+Но на практике все жатое случается крайне редко и в среднем все же мы на каждой итерации имеем дело с в 2 раза меньшим
+числом элементов - т.е. в среднем O(n log n)
 
 */
 
@@ -45,38 +63,29 @@ type Leaderboard struct {
 	data []Entry
 }
 
-///////
-//type SortableInt []int
-//
-//type Case struct {
-//	input    SortableInt
-//	expected SortableInt
-//}
-//
-//func (c SortableInt) Less(i, j int) bool {
-//	return c[i] < c[j]
-//}
-//
-//func (c SortableInt) Swap(i int, j int) {
-//	c[i], c[j] = c[j], c[i]
-//}
-//
-//func (c SortableInt) Len() int {
-//	return len(c)
-//}
-//
-/////////
+type SortableInt []int
+
+type Case struct {
+	input    SortableInt
+	expected SortableInt
+}
+
+func (c SortableInt) Less(i, j int) bool {
+	return c[i] < c[j]
+}
+
+func (c SortableInt) Swap(i int, j int) {
+	c[i], c[j] = c[j], c[i]
+}
+
+func (c SortableInt) Len() int {
+	return len(c)
+}
 
 func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	lb := readData(reader)
 	lb.Sort()
-	//si := SortableInt{3, 5, 10, 4, 1}
-	//si := SortableInt{3, 2, 4, 1}
-	//
-	//quickSort(si, 0, 3)
-	//fmt.Println(si)
-
-	//printLeaderBoard(lb, writer)
+	printLeaderBoard(lb, writer)
 }
 
 func quickSort(data Sortable, lo int, hi int) {
@@ -92,6 +101,7 @@ func quickSort(data Sortable, lo int, hi int) {
 
 func partition(data Sortable, lo int, hi int) int {
 	p := (lo + hi) / 2
+	medianOfThree(data, p, lo, hi)
 
 	i := lo
 	j := hi
@@ -121,17 +131,17 @@ func partition(data Sortable, lo int, hi int) int {
 	}
 }
 
-//func medianOfThree(data Sortable, m1, m0, m2 int) {
-//	if data.Less(m1, m0) {
-//		data.Swap(m1, m0)
-//	}
-//	if data.Less(m2, m1) {
-//		data.Swap(m2, m1)
-//		if data.Less(m1, m0) {
-//			data.Swap(m1, m0)
-//		}
-//	}
-//}
+func medianOfThree(data Sortable, m1, m0, m2 int) {
+	if data.Less(m1, m0) {
+		data.Swap(m1, m0)
+	}
+	if data.Less(m2, m1) {
+		data.Swap(m2, m1)
+		if data.Less(m1, m0) {
+			data.Swap(m1, m0)
+		}
+	}
+}
 
 func (lb *Leaderboard) Sort() {
 	quickSort(lb, 0, lb.Len()-1)
@@ -173,10 +183,12 @@ func readData(reader *bufio.Reader) (lb *Leaderboard) {
 	sc := bufio.NewScanner(reader)
 	sc.Split(bufio.ScanLines)
 	sc.Scan()
+	n, _ := strconv.Atoi(sc.Text())
 
 	lb = &Leaderboard{}
 
-	for sc.Scan() {
+	for i := 0; i < n; i++ {
+		sc.Scan()
 		fields := strings.Fields(sc.Text())
 
 		name := fields[0]
