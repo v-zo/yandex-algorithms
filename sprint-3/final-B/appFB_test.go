@@ -24,6 +24,11 @@ import (
 //	return len(c)
 //}
 
+type Case struct {
+	input    SortableInt
+	expected SortableInt
+}
+
 func TestQuickSort(t *testing.T) {
 	cases := []Case{
 		{input: SortableInt{3, 2, 1}, expected: SortableInt{1, 2, 3}},

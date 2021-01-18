@@ -65,11 +65,6 @@ type Leaderboard struct {
 
 type SortableInt []int
 
-type Case struct {
-	input    SortableInt
-	expected SortableInt
-}
-
 func (c SortableInt) Less(i, j int) bool {
 	return c[i] < c[j]
 }
