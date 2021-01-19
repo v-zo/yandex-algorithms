@@ -23,9 +23,7 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	docs, queries := readData(yaReader)
 
 	si := buildSearchIndex(docs)
-
 	findDocs(queries, si, writer)
-
 	writer.Flush()
 }
 
@@ -87,13 +85,13 @@ func uniqueWords(words []string) (uw []string) {
 	return
 }
 
-func sortRelSlice(relSlice []Rel) {
-	sort.Slice(relSlice, func(i, j int) bool {
-		if relSlice[i].count == relSlice[j].count {
-			return relSlice[i].doc < relSlice[j].doc
+func sortRelSlice(r []Rel) {
+	sort.Slice(r, func(i, j int) bool {
+		if r[i].count == r[j].count {
+			return r[i].doc < r[j].doc
 		}
 
-		return relSlice[i].count > relSlice[j].count
+		return r[i].count > r[j].count
 	})
 }
 
@@ -111,11 +109,11 @@ func buildSearchIndex(docs []string) map[string][]int {
 }
 
 func readData(reader *YaReader) (docs []string, queries []string) {
-	docs = []string{}
 	a := reader.readInt()
 	for i := 0; i < a; i++ {
 		docs = append(docs, reader.readString())
 	}
+
 	m := reader.readInt()
 	for i := 0; i < m; i++ {
 		queries = append(queries, reader.readString())
