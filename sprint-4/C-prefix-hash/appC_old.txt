@@ -44,12 +44,11 @@ func solve(a int, m int, s string, reader *bufio.Reader, writer *bufio.Writer) {
 	}
 }
 
-func createHashStr(a int, m int, s string) func(int, int) string {
+func createHashStr (a int, m int, s string) func(int, int) string {
 	L := len(s)
-	//var memo []int
-	memo := []int{int(s[0])}
-	for i := 1; i < L; i++ {
-		memo = append(memo, (a*memo[i-1])%m+int(s[i])%m)
+	var memo []int
+	for i := 1; i <= L; i++ {
+		memo=append(memo, int(s[i-1])%m *powInt(a, L-i, m) )
 	}
 
 	return func(lo int, hi int) string {
@@ -61,33 +60,29 @@ func createHashStr(a int, m int, s string) func(int, int) string {
 			return strconv.Itoa(int(s[lo-1]) % m)
 		}
 
-		//res := int(s[lo-1])
-		//for i := lo; i < hi; i++ {
-		//	res = memo[lo-1] + int(s[i])%m
-		//}
-
-		res := memo[hi-1] - memo[lo-1]
+		res := memo[lo-1]
+		for i := lo; i <= hi; i++ {
+			res += memo[i-1]
+		}
 
 		return strconv.Itoa(res % m)
 	}
 }
 
-//func hashStr(a int, m int, s string, lo int, hi int) string {
-//	if  len(s) == 0 {
-//		return "0"
-//	}
-//
-//	if lo==hi {
-//		return strconv.Itoa(int(s[lo-1])%m)
-//	}
-//
-//	res := int(s[lo-1])
-//	for i := lo; i < hi; i++ {
-//		res = (a*res)%m + int(s[i])%m
-//	}
-//
-//	return strconv.Itoa(res % m)
-//}
+func powInt(x, y int, m  int) (p int) {
+	p = 1
+
+	for y != 0 {
+		if y%2 != 0 {
+			p *= x
+		}
+
+		x *= x
+		y /= 2
+	}
+
+	return
+}
 
 func readData(reader *YaReader) (a int, m int, s string) {
 	a = reader.readInt()
