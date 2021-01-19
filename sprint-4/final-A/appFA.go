@@ -36,7 +36,7 @@ type Rel struct {
 
 func findDocs(queries []string, si map[string][]int, writer *bufio.Writer) {
 	for _, query := range queries {
-		words := strings.Fields(query)
+		words := uniqueWords(strings.Fields(query))
 
 		relMap := make(map[int]int)
 		for _, word := range words {
@@ -53,13 +53,7 @@ func findDocs(queries []string, si map[string][]int, writer *bufio.Writer) {
 			relSlice = append(relSlice, Rel{doc, count})
 		}
 
-		sort.Slice(relSlice, func(i, j int) bool {
-			if relSlice[i].count == relSlice[j].count {
-				return relSlice[i].doc < relSlice[j].doc
-			}
-
-			return relSlice[i].count > relSlice[j].count
-		})
+		sortRelSlice(relSlice)
 
 		imax := 5
 		if len(relSlice) < 5 {
@@ -78,6 +72,29 @@ func findDocs(queries []string, si map[string][]int, writer *bufio.Writer) {
 			writer.WriteString("\n")
 		}
 	}
+}
+
+func uniqueWords(words []string) (uw []string) {
+	set := make(map[string]struct{})
+	for _, word := range words {
+		set[word] = struct{}{}
+	}
+
+	for word := range set {
+		uw = append(uw, word)
+	}
+
+	return
+}
+
+func sortRelSlice(relSlice []Rel) {
+	sort.Slice(relSlice, func(i, j int) bool {
+		if relSlice[i].count == relSlice[j].count {
+			return relSlice[i].doc < relSlice[j].doc
+		}
+
+		return relSlice[i].count > relSlice[j].count
+	})
 }
 
 func buildSearchIndex(docs []string) map[string][]int {
