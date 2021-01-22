@@ -64,7 +64,18 @@ func (q *HashTable) bucket(k int) int {
 
 func (q *HashTable) put(key int, val string) {
 	bucketIndex := q.bucket(key)
-	q.data[bucketIndex].PushFront(&Entry{key, val})
+	l := q.data[bucketIndex]
+	e := l.Front()
+	for e != nil {
+		if e.Value.(*Entry).key == key {
+			l.Remove(e)
+			l.PushFront(&Entry{key, val})
+			return
+		}
+		e = e.Next()
+	}
+
+	l.PushFront(&Entry{key, val})
 }
 
 func (q *HashTable) get(key int) string {
