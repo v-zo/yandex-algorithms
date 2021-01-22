@@ -58,55 +58,53 @@ func createHashTable(p int) *HashTable {
 	return &HashTable{arr, 32 - p}
 }
 
-func (q *HashTable) bucket(k int) int {
-	return (k * s % twoPow32) >> q.m
+func (q *HashTable) bucket(k int) *list.List {
+	return q.data[(k*s%twoPow32)>>q.m]
 }
 
 func (q *HashTable) put(key int, val string) {
-	bucketIndex := q.bucket(key)
-	l := q.data[bucketIndex]
-	e := l.Front()
-	for e != nil {
-		if e.Value.(*Entry).key == key {
-			l.Remove(e)
-			l.PushFront(&Entry{key, val})
-			return
-		}
-		e = e.Next()
+	l := q.bucket(key)
+	e := findByKey(l, key)
+
+	if e != nil {
+		l.Remove(e)
 	}
 
 	l.PushFront(&Entry{key, val})
 }
 
 func (q *HashTable) get(key int) string {
-	bucketIndex := q.bucket(key)
-	l := *q.data[bucketIndex]
-	e := l.Front()
-	for e != nil {
-		if e.Value.(*Entry).key == key {
-			val := e.Value.(*Entry).val
-			return val
-		}
-		e = e.Next()
+	l := q.bucket(key)
+	e := findByKey(l, key)
+
+	if e == nil {
+		return "None"
 	}
 
-	return "None"
+	return e.Value.(*Entry).val
 }
 
 func (q *HashTable) delete(key int) string {
-	bucketIndex := q.bucket(key)
-	l := q.data[bucketIndex]
+	l := q.bucket(key)
+	e := findByKey(l, key)
+
+	if e == nil {
+		return "None"
+	}
+
+	val := e.Value.(*Entry).val
+	l.Remove(e)
+
+	return val
+}
+
+func findByKey(l *list.List, key int) *list.Element {
 	e := l.Front()
-	for e != nil {
-		if e.Value.(*Entry).key == key {
-			val := e.Value.(*Entry).val
-			l.Remove(e)
-			return val
-		}
+	for e != nil && e.Value.(*Entry).key != key {
 		e = e.Next()
 	}
 
-	return "None"
+	return e
 }
 
 type Executor struct {
