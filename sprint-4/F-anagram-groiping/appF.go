@@ -2,11 +2,23 @@ package main
 
 import (
 	"bufio"
+	"math"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+var primeCodes map[int32]int
+
+func init() {
+	primes := primesEratosthenes(256)
+	primeCodes = make(map[int32]int, 256)
+
+	for i, prime := range primes {
+		primeCodes[int32(97+i)] = prime
+	}
+}
 
 func main() {
 	file := openFile("input.txt")
@@ -33,7 +45,7 @@ func solveProblem(reader *bufio.Reader, writer *bufio.Writer) {
 }
 
 func solve(words []string) (result []string) {
-	hashes := make(map[int32][]int)
+	hashes := make(map[int][]int)
 
 	for i, w := range words {
 		hashes[hash(w)] = append(hashes[hash(w)], i)
@@ -55,14 +67,46 @@ func solve(words []string) (result []string) {
 	return
 }
 
-func hash(s string) (r int32) {
+func hash(s string) (r int) {
+	r = 1
 	for _, ch := range s {
-		r += ch
+		r *= primeCodes[ch]
 	}
 
-	r += int32(len(s))
-
 	return
+}
+
+func primesEratosthenes(x int) []int {
+	n := float64(x)
+	size := int(n*math.Log(n) + n*math.Log(math.Log(n)))
+	arr := make([]int, size)
+
+	for i := range arr {
+		arr[i] = i + 2
+	}
+
+	for j := 0; j < size; j++ {
+		if arr[j] != 0 {
+			for i := j + arr[j]; i < size; i += arr[j] {
+				arr[i] = 0
+			}
+		}
+
+	}
+
+	var r []int
+	cnt := 0
+	for _, a := range arr {
+		if a > 0 {
+			r = append(r, a)
+			cnt++
+			if cnt == x {
+				break
+			}
+		}
+	}
+
+	return r
 }
 
 func readData(reader *YaReader) (n int, s []string) {
