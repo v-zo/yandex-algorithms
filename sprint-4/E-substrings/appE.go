@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-//var fnvHash hash2.Hash32 = fnv.New32a()
-
 func main() {
 	file := openFile("input.txt")
 	defer file.Close()
@@ -17,37 +15,6 @@ func main() {
 	reader := bufio.NewReader(file)
 
 	Solve(reader)
-}
-
-func uniqueChars(s string) (uw []byte) {
-	set := make(map[int32]struct{})
-	for _, ch := range s {
-		set[ch] = struct{}{}
-	}
-
-	for ch := range set {
-		uw = append(uw, byte(ch))
-	}
-
-	return
-}
-
-//func hash(s []byte) uint32 {
-//	fnvHash.Write(s)
-//	return fnvHash.Sum32()
-//}
-
-func uniqueCharsSum(s string) (uw int32) {
-	set := make(map[int32]struct{})
-	for _, ch := range s {
-		set[ch] = struct{}{}
-	}
-
-	for ch := range set {
-		uw += ch
-	}
-
-	return
 }
 
 func Solve(reader *bufio.Reader) {
@@ -59,34 +26,29 @@ func Solve(reader *bufio.Reader) {
 	fmt.Println(res)
 }
 
-//func allUnique {
-//
-//}
-
 func sol(s string) int {
-	lenS := len(s)
-	uc := uniqueChars(s)
-	maxL := len(uc)
-	var _ = maxL
-
-	mp := make(map[uint8]bool)
-	for i := 0; i < maxL; i++ {
-		if mp[s[i]] {
-			maxL -= 1
-			break
-		} else {
-			mp[s[i]] = true
-		}
+	m := 0
+	maxLength := 0
+	charIndex := make(map[uint8]int, 256)
+	for i := uint8(0); i < uint8(255); i++ {
+		charIndex[i] = -1
 	}
 
-	for i := 0; i+maxL <= lenS; i++ {
-		//if getHash(h, i, i + m - 1) == ht * pow[i]) {
-		//	// обнаружено совпадение на позиции i
-		//}
-		//x := s[i]
+	for i := 0; i < len(s); i++ {
+		m = max(charIndex[s[i]]+1, m)
+		charIndex[s[i]] = i
+		maxLength = max(maxLength, i-m+1)
 	}
 
-	return len(uc)
+	return maxLength
+}
+
+func max(a int, b int) int {
+	if b > a {
+		return b
+	}
+
+	return a
 }
 
 func readData(reader *YaReader) string {

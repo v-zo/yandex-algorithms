@@ -9,8 +9,8 @@ func TestSolution(t *testing.T) {
 		"abcabcbb": 3,
 		"bbbbb":    1,
 		"acbc":     3,
-		"aabxcx":   3,
-		"abccdef":  3,
+		"aabxcx":   4,
+		"abccdef":  4,
 	}
 
 	for k, v := range cases {
