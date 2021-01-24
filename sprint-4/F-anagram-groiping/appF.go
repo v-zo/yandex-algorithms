@@ -16,7 +16,7 @@ func init() {
 	primeCodes = make(map[int32]int, 256)
 
 	for i, prime := range primes {
-		primeCodes[int32(97+i)] = prime
+		primeCodes[int32(i)] = prime
 	}
 }
 
@@ -69,8 +69,13 @@ func solve(words []string) (result []string) {
 
 func hash(s string) (r int) {
 	r = 1
+	m := 15485863
 	for _, ch := range s {
-		r *= primeCodes[ch]
+		r = (r % m * primeCodes[ch]) % m
+	}
+
+	if r > math.MaxInt32/10 {
+		panic(r)
 	}
 
 	return
