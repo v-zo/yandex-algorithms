@@ -39,55 +39,57 @@ func solve(a int, m int, s string, reader *bufio.Reader, writer *bufio.Writer) {
 		pair := strings.Fields(scanner.Text())
 		lo, _ := strconv.Atoi(pair[0])
 		hi, _ := strconv.Atoi(pair[1])
-		writer.WriteString(hashStr(lo, hi))
+		writer.WriteString(hashStr(lo-1, hi-1))
 		writer.WriteString("\n")
 	}
 }
 
-func createHashStr(a int, m int, s string) func(int, int) string {
+func horner(a int, m int, s string) []int {
 	L := len(s)
-	//var memo []int
-	memo := []int{int(s[0])}
+	h := make([]int, L)
+	h[0] = int(s[0])
 	for i := 1; i < L; i++ {
-		memo = append(memo, (a*memo[i-1])%m+int(s[i])%m)
+		h[i] = (h[i-1]*a + int(s[i])) % m
 	}
 
+	return h
+}
+
+func createHashStr(a int, m int, s string) func(int, int) string {
+	L := len(s)
+	pows := powIntMod(a, m, L+1)
+
+	h := horner(a, m, s)
+
+	aModM := a % m
+
 	return func(lo int, hi int) string {
-		if L == 0 {
-			return "0"
+		delta := hi - lo
+		res := h[delta]
+		pd := pows[delta]
+		for i := 0; i < lo; i++ {
+			ss := res%m - (pd*int(s[i])%m)%m
+			res = (mod(ss, m)*aModM)%m + int(s[i+delta+1])%m
 		}
-
-		if lo == hi {
-			return strconv.Itoa(int(s[lo-1]) % m)
-		}
-
-		//res := int(s[lo-1])
-		//for i := lo; i < hi; i++ {
-		//	res = memo[lo-1] + int(s[i])%m
-		//}
-
-		res := memo[hi-1] - memo[lo-1]
 
 		return strconv.Itoa(res % m)
 	}
 }
 
-//func hashStr(a int, m int, s string, lo int, hi int) string {
-//	if  len(s) == 0 {
-//		return "0"
-//	}
-//
-//	if lo==hi {
-//		return strconv.Itoa(int(s[lo-1])%m)
-//	}
-//
-//	res := int(s[lo-1])
-//	for i := lo; i < hi; i++ {
-//		res = (a*res)%m + int(s[i])%m
-//	}
-//
-//	return strconv.Itoa(res % m)
-//}
+func mod(x, m int) int {
+	return (x%m + m) % m
+}
+
+func powIntMod(a, m, L int) (p []int) {
+	p = make([]int, L+1)
+	p[0] = 1
+
+	for i := 1; i < L; i++ {
+		p[i] = p[i-1] * a % m
+	}
+
+	return
+}
 
 func readData(reader *YaReader) (a int, m int, s string) {
 	a = reader.readInt()

@@ -1,28 +1,23 @@
 package main
 
 import (
-	"bufio"
-	"strings"
+	"reflect"
 	"testing"
 )
 
-func TestSolution(t *testing.T) {
-	cases := map[string]string{
-		"1000\n1000000009\nabcdefgh\n7\n1 1\n1 5\n2 3\n3 4\n4 4\n1 8\n5 8": "97\n98226219\n98099\n99100\n100\n218067142\n102102195",
-		"100\n10\na\n1\n1 1\n": "7",
+func TestHorner(t *testing.T) {
+	cases := map[string][]int{
+		"abcdefgh": {97, 97098, 97098099, 98098227, 98226219, 226218220, 218218069, 218067142},
 	}
 
-	for k, v := range cases {
-		sr := strings.NewReader(k)
-		reader := bufio.NewReader(sr)
-		var wr strings.Builder
-		writer := bufio.NewWriter(&wr)
+	for s, v := range cases {
 
-		Solve(reader, writer)
+		res := horner(1000, 1000000009, s)
 
-		res := strings.Trim(wr.String(), "\n")
-		if v != res {
-			t.Errorf("\ncase:\n%s\n got: \n%s\nwant: \n%s", k, res, v)
+		//fmt.Println(res)
+
+		if !reflect.DeepEqual(res, v) {
+			t.Errorf("\ncase:\n%s\n got: \n%v\nwant: \n%v", s, res, v)
 		}
 	}
 }
