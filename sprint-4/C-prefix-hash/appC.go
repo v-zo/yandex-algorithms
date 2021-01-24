@@ -57,19 +57,22 @@ func horner(a int, m int, s string) []int {
 
 func createHashStr(a int, m int, s string) func(int, int) string {
 	L := len(s)
-	pows := powIntMod(a, m, L+1)
-
+	pows := powIntMod(a, m, L)
 	h := horner(a, m, s)
-
 	aModM := a % m
 
 	return func(lo int, hi int) string {
 		delta := hi - lo
+
+		if delta < lo {
+			return strconv.Itoa(horner(a, m, s[lo:hi+1])[delta])
+		}
+
 		res := h[delta]
 		pd := pows[delta]
 		for i := 0; i < lo; i++ {
-			ss := res%m - (pd*int(s[i])%m)%m
-			res = (mod(ss, m)*aModM)%m + int(s[i+delta+1])%m
+			ss := res - (pd * int(s[i]))
+			res = mod(ss, m)*aModM + int(s[i+delta+1])%m
 		}
 
 		return strconv.Itoa(res % m)
@@ -81,7 +84,7 @@ func mod(x, m int) int {
 }
 
 func powIntMod(a, m, L int) (p []int) {
-	p = make([]int, L+1)
+	p = make([]int, L)
 	p[0] = 1
 
 	for i := 1; i < L; i++ {
