@@ -33,9 +33,11 @@ import (
 	"strings"
 )
 
+const maxDocsPerLine = 5
+
 func main() {
 	file := openFile("input.txt")
-	defer file.Close()
+	defer closeFile(file)
 
 	reader := bufio.NewReader(file)
 	writer := bufio.NewWriter(os.Stdout)
@@ -47,54 +49,60 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 	yaReader := &YaReader{reader}
 	docs, queries := readData(yaReader)
 
+	rsw := &RelevanceSliceWriter{writer}
 	si := buildSearchIndex(docs)
-	findDocs(queries, si, writer)
-	writer.Flush()
+	for _, query := range queries {
+		relevanceSlice := si.queryRelevanceSlice(query)
+		rsw.writeRelevanceSlice(relevanceSlice)
+	}
+
+	err := writer.Flush()
+	check(err)
 }
 
-type Rel struct {
+type DocumentRelevance struct {
 	doc   int
 	count int
 }
 
-func findDocs(queries []string, si map[string][]int, writer *bufio.Writer) {
-	for _, query := range queries {
-		words := uniqueWords(strings.Fields(query))
+type RelevanceSliceWriter struct {
+	writer *bufio.Writer
+}
 
-		relMap := make(map[int]int)
-		for _, word := range words {
-			includedInDocs := si[word]
-			if len(includedInDocs) > 0 {
-				for _, doc := range includedInDocs {
-					relMap[doc] = relMap[doc] + 1
-				}
-			}
-		}
+func (rsw *RelevanceSliceWriter) writeCarefully(s string) {
+	_, err := rsw.writer.WriteString(s)
+	check(err)
+}
 
-		var relSlice []Rel
-		for doc, count := range relMap {
-			relSlice = append(relSlice, Rel{doc, count})
-		}
-
-		sortRelSlice(relSlice)
-
-		imax := 5
-		if len(relSlice) < 5 {
-			imax = len(relSlice)
-		}
-
-		if imax > 0 {
-			for i := 0; i < imax; i++ {
-				ch := strconv.Itoa(relSlice[i].doc + 1)
-				writer.WriteString(ch)
-				if i != imax-1 {
-					writer.WriteString(" ")
-				}
-			}
-
-			writer.WriteString("\n")
-		}
+func (rsw *RelevanceSliceWriter) writeRelevanceSlice(rs []DocumentRelevance) {
+	maxDocs := maxDocsPerLine
+	if len(rs) < maxDocsPerLine {
+		maxDocs = len(rs)
 	}
+
+	stringifyDocId := func(i int) string {
+		return strconv.Itoa(rs[i].doc + 1)
+	}
+
+	if maxDocs > 0 {
+		docId := stringifyDocId(0)
+		rsw.writeCarefully(docId)
+		for i := 1; i < maxDocs; i++ {
+			rsw.writeCarefully(" ")
+			docId = stringifyDocId(i)
+			rsw.writeCarefully(docId)
+		}
+
+		rsw.writeCarefully("\n")
+	}
+}
+
+func (si *SearchIndex) queryRelevanceSlice(query string) []DocumentRelevance {
+	words := uniqueWords(strings.Fields(query))
+	relevanceSlice := si.getRelevanceSlice(words)
+	sortRelSlice(relevanceSlice)
+
+	return relevanceSlice
 }
 
 func uniqueWords(words []string) (uw []string) {
@@ -110,7 +118,7 @@ func uniqueWords(words []string) (uw []string) {
 	return
 }
 
-func sortRelSlice(r []Rel) {
+func sortRelSlice(r []DocumentRelevance) {
 	sort.Slice(r, func(i, j int) bool {
 		if r[i].count == r[j].count {
 			return r[i].doc < r[j].doc
@@ -120,7 +128,31 @@ func sortRelSlice(r []Rel) {
 	})
 }
 
-func buildSearchIndex(docs []string) map[string][]int {
+type SearchIndex struct {
+	index map[string][]int
+}
+
+func (si *SearchIndex) getRelevanceSlice(words []string) []DocumentRelevance {
+	relevanceMap := make(map[int]int)
+	for _, word := range words {
+		includedInDocs := si.index[word]
+		for _, doc := range includedInDocs {
+			relevanceMap[doc] = relevanceMap[doc] + 1
+		}
+	}
+
+	return mapToRelevanceSlice(relevanceMap)
+}
+
+func mapToRelevanceSlice(m map[int]int) (relevanceSlice []DocumentRelevance) {
+	for doc, count := range m {
+		relevanceSlice = append(relevanceSlice, DocumentRelevance{doc, count})
+	}
+
+	return
+}
+
+func buildSearchIndex(docs []string) *SearchIndex {
 	searchIndex := make(map[string][]int)
 
 	for i, doc := range docs {
@@ -130,7 +162,7 @@ func buildSearchIndex(docs []string) map[string][]int {
 		}
 	}
 
-	return searchIndex
+	return &SearchIndex{searchIndex}
 }
 
 func readData(reader *YaReader) (docs []string, queries []string) {
@@ -164,8 +196,18 @@ func (reader *YaReader) readInt() int {
 
 func openFile(path string) *os.File {
 	file, err := os.Open(path)
+	check(err)
+
+	return file
+}
+
+func closeFile(file *os.File) {
+	err := file.Close()
+	check(err)
+}
+
+func check(err error) {
 	if err != nil {
 		panic(err)
 	}
-	return file
 }
