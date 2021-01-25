@@ -37,14 +37,18 @@ func solveProblem(reader *bufio.Reader, writer *bufio.Writer) {
 	output := solve(s)
 
 	for _, ot := range output {
-		writer.WriteString(ot)
+		var strmap []string
+		for _, o := range ot {
+			strmap = append(strmap, strconv.Itoa(o))
+		}
+		writer.WriteString(strings.Join(strmap, " "))
 		writer.WriteString("\n")
 	}
 
 	writer.Flush()
 }
 
-func solve(words []string) (result []string) {
+func solve(words []string) (result [][]int) {
 	hashes := make(map[int][]int)
 
 	for i, w := range words {
@@ -52,12 +56,12 @@ func solve(words []string) (result []string) {
 	}
 
 	for _, indexes := range hashes {
-		var entry []string
+		var entry []int
 		for _, index := range indexes {
-			entry = append(entry, strconv.Itoa(index))
+			entry = append(entry, index)
 		}
 
-		result = append(result, strings.Join(entry, " "))
+		result = append(result, entry)
 	}
 
 	sort.Slice(result, func(i, j int) bool {
