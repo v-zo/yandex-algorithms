@@ -37,9 +37,9 @@ const maxDocsPerLine = 5
 
 func main() {
 	file := openFile("input.txt")
-	defer closeFile(file)
+	defer file.close()
 
-	reader := bufio.NewReader(file)
+	reader := bufio.NewReader(file.osFile)
 	writer := bufio.NewWriter(os.Stdout)
 
 	Solve(reader, writer)
@@ -61,7 +61,7 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 }
 
 type DocumentRelevance struct {
-	doc   int
+	docId int
 	count int
 }
 
@@ -81,7 +81,7 @@ func (rsw *RelevanceSliceWriter) writeRelevanceSlice(rs []DocumentRelevance) {
 	}
 
 	stringifyDocId := func(i int) string {
-		return strconv.Itoa(rs[i].doc + 1)
+		return strconv.Itoa(rs[i].docId + 1)
 	}
 
 	if maxDocs > 0 {
@@ -121,7 +121,7 @@ func uniqueWords(words []string) (uw []string) {
 func sortRelSlice(r []DocumentRelevance) {
 	sort.Slice(r, func(i, j int) bool {
 		if r[i].count == r[j].count {
-			return r[i].doc < r[j].doc
+			return r[i].docId < r[j].docId
 		}
 
 		return r[i].count > r[j].count
@@ -184,25 +184,32 @@ type YaReader struct {
 }
 
 func (reader *YaReader) readString() string {
-	line, _ := reader.ReadString('\n')
+	line, err := reader.ReadString('\n')
+	check(err)
 	return strings.TrimRight(line, "\n")
 }
 
 func (reader *YaReader) readInt() int {
-	line, _ := reader.ReadString('\n')
-	res, _ := strconv.Atoi(strings.TrimRight(line, "\n"))
+	line, err := reader.ReadString('\n')
+	check(err)
+	res, err := strconv.Atoi(strings.TrimRight(line, "\n"))
+	check(err)
 	return res
 }
 
-func openFile(path string) *os.File {
-	file, err := os.Open(path)
-	check(err)
-
-	return file
+type File struct {
+	osFile *os.File
 }
 
-func closeFile(file *os.File) {
-	err := file.Close()
+func openFile(path string) *File {
+	osFile, err := os.Open(path)
+	check(err)
+
+	return &File{osFile}
+}
+
+func (f *File) close() {
+	err := f.osFile.Close()
 	check(err)
 }
 
