@@ -27,6 +27,7 @@ package main
 
 import (
 	"bufio"
+	"io"
 	"os"
 	"sort"
 	"strconv"
@@ -43,9 +44,12 @@ func main() {
 	writer := bufio.NewWriter(os.Stdout)
 
 	Solve(reader, writer)
+
+	err := writer.Flush()
+	check(err)
 }
 
-func Solve(reader *bufio.Reader, writer *bufio.Writer) {
+func Solve(reader *bufio.Reader, writer io.Writer) {
 	yaReader := &YaReader{reader}
 	docs, queries := readData(yaReader)
 
@@ -55,9 +59,6 @@ func Solve(reader *bufio.Reader, writer *bufio.Writer) {
 		relevanceSlice := si.queryRelevanceSlice(query)
 		rsw.writeRelevanceSlice(relevanceSlice)
 	}
-
-	err := writer.Flush()
-	check(err)
 }
 
 type DocumentRelevance struct {
@@ -66,11 +67,11 @@ type DocumentRelevance struct {
 }
 
 type RelevanceSliceWriter struct {
-	writer *bufio.Writer
+	writer io.Writer
 }
 
 func (rsw *RelevanceSliceWriter) writeCarefully(s string) {
-	_, err := rsw.writer.WriteString(s)
+	_, err := io.WriteString(rsw.writer, s)
 	check(err)
 }
 

@@ -21,6 +21,8 @@ func TestSolution(t *testing.T) {
 
 		Solve(reader, writer)
 
+		writer.Flush()
+
 		res := strings.Trim(wr.String(), "\n")
 		if v != res {
 			t.Errorf("\ncase:\n%s\n got: \n%s\nwant: \n%s", k, res, v)
