@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"math"
 	"strings"
 	"testing"
 )
@@ -26,9 +27,39 @@ func TestSolution(t *testing.T) {
 
 		Solve(reader, writer)
 
+		err := writer.Flush()
+		check(err)
+
 		res := strings.Trim(wr.String(), "\n")
 		if strings.Trim(v, "\n") != res {
 			t.Errorf("\ncase:\n%s\n got: \n%s\nwant: \n%s", k, res, v)
 		}
+	}
+}
+
+func powInt(x, y int) (p int) {
+	p = 1
+
+	for y != 0 {
+		if y%2 != 0 {
+			p *= x
+		}
+
+		x *= x
+		y /= 2
+	}
+
+	return
+}
+
+func BenchmarkPowInt(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var _ = powInt(2, 16)
+	}
+}
+
+func BenchmarkMathPow(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var _ = int(math.Pow(2, 16))
 	}
 }

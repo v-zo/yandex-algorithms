@@ -1,23 +1,29 @@
 /*
 
-посылка https://contest.yandex.ru/contest/24414/problems/B/
+посылка
+https://contest.yandex.ru/contest/24414/run-report/47302058/
 
 -- ПРИНЦИП РАБОТЫ --
-	Число корзин и формула для номера корзины  подобраны согласно формуле в конце главы "Выбор размера хеш-таблицы и
-вычисление номера корзины"
-https://praktikum.yandex.ru/learn/algorithms/courses/7f101a83-9539-4599-b6e8-8645c3f31fad/sprints/3003/topics/618173c7-3c0e-4955-b88b-d7146f9ffe2e/lessons/db4e40bc-75c2-4302-95ae-e9cc04f86546/
-	Разрешать коллизии следует с помощью метода цепочек: в корзинах мы храним не сами значения,
-а ссылку на связный список. Если при добавлении элемента возникает коллизия мы добавляем этот элемент
-в начало списка.
+	Данное решение реализует стандартную структуру данных "Хэш Таблица" с целочисленными ключами и
+строковыми значениями.
+	Число корзин и формула для номера корзины подобраны согласно формуле в конце главы "Выбор размера хеш-таблицы и
+вычисление номера корзины":
+bucket(h)=(h⋅s mod 2^32)≫(32−p), где s=2654435769. Здесь p - целое число, логарифм по основанию 2 от числа корзин.
+При выборе значения параметра p мы должны учитывать что по условию задачи число корзин не должно превышать 100000.
+2^16==65536 < 100000 < 2^17==131072, т.е. 65536 - степень 2, максимально допустимая ограничением. Поэтому в качестве p
+мы выбрали значение 16.
+	Коллизии разрешаем с помощью метода цепочек: в корзинах мы храним не сами значения, а ссылку на связный список.
+Если при добавлении элемента возникает коллизия мы добавляем этот элементт в начало списка.
 
 -- ДОКАЗАТЕЛЬСТВО КОРРЕКТНОСТИ --
-	Мы выбрали такую формулу для вычисления номера корзины, для которой известно что она обеспечивает хорошую
-равномерность заполнения корзин.
+	Реализованная нами структура данных поддерживает операции чтения, записи и удаления элементов по ключу - что
+и требовалось исполнить по условию задачи.
 
 -- ВРЕМЕННАЯ СЛОЖНОСТЬ --
 	Средняя сложность операций в хеш-таблице равняется O(1+α), где α -  отношение общего числа запросов к
 числу корзин, в нашем случае 1 000 000/65536 = 15.2. Это выше чем рекомендуемое значение
 1 ≤ α ≤ 2, цепочки получаются длинными, но с поставленной задачи алгоритм справляется.
+
 */
 
 package main
@@ -25,41 +31,44 @@ package main
 import (
 	"bufio"
 	"container/list"
+	"io"
+	"math"
 	"os"
 	"strconv"
 	"strings"
 )
 
 const (
-	s        = 2654435769
-	twoPow32 = 4294967296
+	goldenMultiplier = 2654435769
+	twoPow32         = 4294967296
+	log2BucketSize   = 16
 )
 
 func main() {
 	file := openFile("input.txt")
-	defer file.Close()
+	defer file.close()
 
 	reader := bufio.NewReader(file)
 	writer := bufio.NewWriter(os.Stdout)
 
 	Solve(reader, writer)
+
+	err := writer.Flush()
+	check(err)
 }
 
-func Solve(reader *bufio.Reader, writer *bufio.Writer) {
+func Solve(reader *bufio.Reader, writer io.Writer) {
 	yaReader := &YaReader{reader}
 	n := yaReader.readInt()
 	sc := bufio.NewScanner(yaReader)
-	sc.Split(bufio.ScanLines)
 
-	ht := createHashTable(16) // 2^16==65536 < 100000 < 2^17==131072
+	ht := createHashTable(log2BucketSize)
 	ex := &Executor{ht, writer}
 
 	for i := 0; i < n; i++ {
 		sc.Scan()
 		ex.run(sc.Text())
 	}
-
-	writer.Flush()
 }
 
 type Entry struct {
@@ -73,7 +82,8 @@ type HashTable struct {
 }
 
 func createHashTable(p int) *HashTable {
-	arr := make([]*list.List, powInt(2, p))
+	size := int(math.Pow(2, float64(p)))
+	arr := make([]*list.List, size)
 	for i := range arr {
 		arr[i] = list.New()
 	}
@@ -81,7 +91,7 @@ func createHashTable(p int) *HashTable {
 }
 
 func (q *HashTable) bucket(k int) *list.List {
-	return q.data[(k*s%twoPow32)>>q.m]
+	return q.data[(k*goldenMultiplier%twoPow32)>>q.m]
 }
 
 func (q *HashTable) put(key int, val string) {
@@ -131,12 +141,14 @@ func findByKey(l *list.List, key int) *list.Element {
 
 type Executor struct {
 	hashTable *HashTable
-	writer    *bufio.Writer
+	writer    io.Writer
 }
 
 func (ex *Executor) writeLn(s string) {
-	ex.writer.WriteString(s)
-	ex.writer.WriteString("\n")
+	_, err := io.WriteString(ex.writer, s)
+	check(err)
+	_, err = io.WriteString(ex.writer, "\n")
+	check(err)
 }
 
 func (ex *Executor) run(command string) {
@@ -161,24 +173,10 @@ func (ex *Executor) run(command string) {
 	}
 }
 
-func toInt(s string) (i int) {
-	i, _ = strconv.Atoi(s)
-	return
-}
-
-func powInt(x, y int) (p int) {
-	p = 1
-
-	for y != 0 {
-		if y%2 != 0 {
-			p *= x
-		}
-
-		x *= x
-		y /= 2
-	}
-
-	return
+func toInt(s string) int {
+	i, err := strconv.Atoi(s)
+	check(err)
+	return i
 }
 
 type YaReader struct {
@@ -186,20 +184,37 @@ type YaReader struct {
 }
 
 func (reader *YaReader) readString() string {
-	line, _ := reader.ReadString('\n')
+	line, err := reader.ReadString('\n')
+	check(err)
 	return strings.TrimRight(line, "\n")
 }
 
 func (reader *YaReader) readInt() int {
-	line, _ := reader.ReadString('\n')
-	res, _ := strconv.Atoi(strings.TrimRight(line, "\n"))
+	line, err := reader.ReadString('\n')
+	check(err)
+	res, err := strconv.Atoi(strings.TrimRight(line, "\n"))
+	check(err)
 	return res
 }
 
-func openFile(path string) *os.File {
-	file, err := os.Open(path)
+type File struct {
+	*os.File
+}
+
+func openFile(path string) *File {
+	osFile, err := os.Open(path)
+	check(err)
+
+	return &File{osFile}
+}
+
+func (file *File) close() {
+	err := file.Close()
+	check(err)
+}
+
+func check(err error) {
 	if err != nil {
 		panic(err)
 	}
-	return file
 }
