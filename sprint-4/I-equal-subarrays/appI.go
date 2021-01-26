@@ -26,19 +26,19 @@ func process(reader *bufio.Reader, writer io.Writer) {
 	yaReader := &YaReader{reader}
 	n, seq1, m, seq2 := readData(yaReader)
 
-	res := solve(n, seq1, m, seq2)
+	res := solve(int16(n), seq1, int16(m), seq2)
 
-	io.WriteString(writer, strconv.Itoa(res))
+	io.WriteString(writer, strconv.Itoa(int(res)))
 }
 
-func solve(n int, seq1 []string, m int, seq2 []string) (max int) {
-	L := make([]map[int]int, n)
-	for i := 0; i < n; i++ {
-		L[i] = make(map[int]int, m)
+func solve(n int16, seq1 []string, m int16, seq2 []string) (max int16) {
+	L := make([]map[int16]int16, n)
+	for i := int16(0); i < n; i++ {
+		L[i] = make(map[int16]int16)
 	}
 
-	for i := 0; i < n; i++ {
-		for j := 0; j < m; j++ {
+	for i := int16(0); i < n; i++ {
+		for j := int16(0); j < m; j++ {
 			if seq1[i] == seq2[j] {
 				if i == 0 || j == 0 {
 					L[i][j] = 1
