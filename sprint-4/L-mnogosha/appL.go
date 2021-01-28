@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	q = 1000
-	m = 1000000009
+	q1 = 1000000007
+	q2 = 982451653
+	m  = 1000000009
 )
 
 func main() {
@@ -38,7 +39,7 @@ func process(reader *bufio.Reader, writer io.Writer) {
 	check(err)
 }
 
-func prefixHash(s string, n int) int {
+func horner(s string, n int, qq int) int {
 	h := int(s[0])
 
 	if len(s) == 1 {
@@ -46,24 +47,30 @@ func prefixHash(s string, n int) int {
 	}
 
 	for i := 1; i < n; i++ {
-		h = (h*q + int(s[i])) % m
+		h = (h*qq + int(s[i])) % m
 	}
 
 	return h % m
 }
 
 func solve(n int, k int, s string) string {
-	qn := powIntMod(n - 1)
+	qn1 := powIntMod(n-1, q1)
+	qn2 := powIntMod(n-1, q2)
 	md := func(x int) int {
 		return mod(x, m)
 	}
 
 	positions := make(map[int][]int)
-	hash := prefixHash(s, n)
+	hash1 := horner(s, n, q1)
+	hash2 := horner(s, n, q2)
+	hash := hash1 + hash2
 	positions[hash] = []int{0}
 
 	for i := 0; i < len(s)-n; i++ {
-		hash = md(md(md(hash)-int(s[i])*qn)*q + int(s[n+i]))
+		hash1 = md(md(hash1-int(s[i])*qn1)*q1 + int(s[n+i]))
+		hash2 = md(md(hash2-int(s[i])*qn2)*q2 + int(s[n+i]))
+		hash = hash1 + hash2
+
 		if positions[hash] == nil {
 			positions[hash] = []int{i + 1}
 		} else {
@@ -85,10 +92,10 @@ func mod(x, m int) int {
 	return (x%m + m) % m
 }
 
-func powIntMod(n int) int {
+func powIntMod(n int, qq int) int {
 	p := 1
 	for i := 0; i < n; i++ {
-		p = p * q % m
+		p = p * qq % m
 	}
 
 	return p
