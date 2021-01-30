@@ -1,0 +1,7 @@
+
+go test -bench=. ./... -cpuprofile=cpu.profile
+
+
+go tool pprof cpu.profile
+top 10
+list funname
