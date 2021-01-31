@@ -11,6 +11,8 @@ func TestSolution(t *testing.T) {
 		"10 2\ngggggooooogggggoooooogggggssshaa\n": "0 5",
 		"3 4\nallallallallalla\n":                  "0 1 2",
 		"1 1\nx\n":                                 "0",
+		"1 2\nxx\n":                                "0",
+		"1 1\nxz\n":                                "0 1",
 	}
 
 	for k, v := range cases {
@@ -19,7 +21,7 @@ func TestSolution(t *testing.T) {
 		var wr strings.Builder
 		writer := bufio.NewWriter(&wr)
 
-		process(reader, writer)
+		processData(reader, writer)
 
 		err := writer.Flush()
 		check(err)

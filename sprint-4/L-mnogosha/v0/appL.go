@@ -8,6 +8,13 @@ import (
 	"strings"
 )
 
+const (
+	q1 = 1000000007
+	m1 = 1000000009
+	q2 = 982451653
+	m2 = 982451707
+)
+
 func main() {
 	file := openFile("input.txt")
 	defer file.close()
@@ -15,7 +22,7 @@ func main() {
 	reader := bufio.NewReader(file)
 	writer := bufio.NewWriter(os.Stdout)
 
-	processData(reader, writer)
+	process(reader, writer)
 
 	_, err := writer.WriteString("\n")
 	check(err)
@@ -23,53 +30,79 @@ func main() {
 	check(err)
 }
 
-func processData(reader *bufio.Reader, writer io.Writer) {
+func process(reader *bufio.Reader, writer io.Writer) {
 	yaReader := &YaReader{reader}
 	n, k, s := readData(yaReader)
 
 	res := solve(n, k, s)
 
-	_, err := io.WriteString(writer, strings.TrimRight(res, " "))
+	_, err := io.WriteString(writer, res)
 	check(err)
 }
 
-type positionCounter struct {
-	pos   int
-	count int
+func horner(s string, n int, qq int, mm int) int {
+	h := int(s[0])
+
+	if len(s) == 1 {
+		return h
+	}
+
+	for i := 1; i < n; i++ {
+		h = (h*qq + int(s[i])) % mm
+	}
+
+	return h % mm
 }
 
-func solve(n int, k int, s string) (positions string) {
-	L := len(s)
-
-	if L == 1 {
-		positions = "0"
-		return
+func solve(n int, k int, s string) string {
+	qn1 := powIntMod(n-1, q1, m1)
+	qn2 := powIntMod(n-1, q2, m2)
+	md1 := func(x int) int {
+		return mod(x, m1)
+	}
+	md2 := func(x int) int {
+		return mod(x, m2)
 	}
 
-	indexMap := make(map[string]positionCounter)
+	positions := make(map[int][]int)
+	hash1 := horner(s, n, q1, m1)
+	hash2 := horner(s, n, q2, m2)
+	hash := hash1 + hash2
+	positions[hash] = []int{0}
 
-	for i := 0; i < L-n+1; i++ {
-		word := s[i : i+n]
-		pos := i
-		if _, has := indexMap[word]; has {
-			posNew := pos
-			if indexMap[word].pos < posNew {
-				posNew = indexMap[word].pos
-			}
-			indexMap[word] = positionCounter{posNew, indexMap[word].count + 1}
+	for i := 0; i < len(s)-n; i++ {
+		hash1 = md1(md1(hash1%m1-int(s[i])*qn1)*q1 + int(s[n+i]))
+		hash2 = md2(md2(hash2%m2-int(s[i])*qn2)*q2 + int(s[n+i]))
+		hash = hash1 + hash2
+
+		if positions[hash] == nil {
+			positions[hash] = []int{i + 1}
 		} else {
-			indexMap[word] = positionCounter{pos, 1}
+			positions[hash] = append(positions[hash], i+1)
 		}
 	}
 
-	for _, pc := range indexMap {
-		if pc.count >= k {
-			num := strconv.Itoa(pc.pos)
-			positions += num + " "
+	var arr []string
+	for _, pos := range positions {
+		if len(pos) >= k {
+			arr = append(arr, strconv.Itoa(pos[0]))
 		}
 	}
 
-	return
+	return strings.Join(arr, " ")
+}
+
+func mod(x, m int) int {
+	return (x%m + m) % m
+}
+
+func powIntMod(n int, qq int, mm int) int {
+	p := 1
+	for i := 0; i < n; i++ {
+		p = p * qq % mm
+	}
+
+	return p
 }
 
 func readData(reader *YaReader) (n int, k int, s string) {
