@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -27,8 +29,18 @@ func TestSolution(t *testing.T) {
 		check(err)
 
 		res := strings.Trim(wr.String(), "\n")
-		if v != res {
+
+		if !reflect.DeepEqual(splitNSort(res), splitNSort(v)) {
 			t.Errorf("\n- case:\n%s- got: \n%s\n- want: \n%s", k, res, v)
 		}
 	}
+}
+
+func splitNSort(s string) []string {
+	arr := strings.Split(s, " ")
+	sort.Slice(arr, func(i, j int) bool {
+		return arr[i] < arr[j]
+	})
+
+	return arr
 }
