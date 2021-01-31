@@ -44,3 +44,9 @@ func splitNSort(s string) []string {
 
 	return arr
 }
+
+func BenchmarkSolve(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		solve(3, 4, "allallallallalla")
+	}
+}

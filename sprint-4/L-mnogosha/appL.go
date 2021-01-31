@@ -50,15 +50,14 @@ func solve(n int, k int, s string) (positions string) {
 
 	for i := 0; i < L-n+1; i++ {
 		word := s[i : i+n]
-		pos := i
 		if _, has := indexMap[word]; has {
-			posNew := pos
-			if indexMap[word].pos < posNew {
-				posNew = indexMap[word].pos
+			pos := i
+			if indexMap[word].pos < pos {
+				pos = indexMap[word].pos
 			}
-			indexMap[word] = positionCounter{posNew, indexMap[word].count + 1}
+			indexMap[word] = positionCounter{pos, indexMap[word].count + 1}
 		} else {
-			indexMap[word] = positionCounter{pos, 1}
+			indexMap[word] = positionCounter{i, 1}
 		}
 	}
 
