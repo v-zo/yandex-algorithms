@@ -8,11 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	q = 1223
-	m = 104395301
-)
-
 func main() {
 	file := openFile("input.txt")
 	defer file.close()
@@ -33,8 +28,14 @@ func processData(reader *bufio.Reader, writer io.Writer) {
 	n, k, s := readData(yaReader)
 
 	res := solve(n, k, s)
+	var o []string
+	for _, re := range res {
+		o = append(o, strconv.Itoa(re))
+	}
 
-	_, err := io.WriteString(writer, strings.TrimRight(res, " "))
+	output := strings.Join(o, " ")
+
+	_, err := io.WriteString(writer, strings.TrimRight(output, " "))
 	check(err)
 }
 
@@ -43,59 +44,34 @@ type positionCounter struct {
 	count int
 }
 
-func powIntMod(N, q, m int) (p int) {
-	p = 1
-
-	for i := 0; i < N; i++ {
-		p = (p * q) % m
-	}
-
-	return
-}
-
-func mod(x, m int) int {
-	return (x%m + m) % m
-}
-
-func solve(n int, k int, s string) (positions string) {
+func solve(n int, k int, s string) (positions []int) {
 	L := len(s)
-
 	if L == 1 {
-		positions = "0"
+		positions = []int{0}
 		return
 	}
 
-	indexMap := make(map[int]positionCounter)
-	qn := powIntMod(n-1, q, m)
-
-	md := func(x int) int {
-		return mod(x, m)
-	}
-
-	h := int(s[0])
-	for i := 1; i < n; i++ {
-		h = (h*q + int(s[i])) % m
-	}
-
-	indexMap[h] = positionCounter{0, 1}
-	for i := 1; i < L-n+1; i++ {
-		h = ((md(h-int(s[i-1])*qn) * q) + int(s[i+n-1])) % m
-		iw, has := indexMap[h]
-		pos := i
+	indexMap := make(map[string]positionCounter)
+	steps := L - n + 1
+	for i := 0; i < steps; i++ {
+		word := s[i : i+n]
+		item, has := indexMap[word]
 		if has {
-			if iw.pos < pos {
-				pos = iw.pos
+			pos := i
+			if item.pos < pos {
+				pos = item.pos
 			}
-			indexMap[h] = positionCounter{pos, iw.count + 1}
+			newCount := item.count + 1
+			indexMap[word] = positionCounter{pos, newCount}
 		} else {
-			indexMap[h] = positionCounter{pos, 1}
+			indexMap[word] = positionCounter{i, 1}
 		}
 	}
 
 	for _, pc := range indexMap {
 		if pc.count >= k {
-			num := strconv.Itoa(pc.pos)
-			positions += num + " "
+			position := pc.pos
+			positions = append(positions, position)
 		}
 	}
 

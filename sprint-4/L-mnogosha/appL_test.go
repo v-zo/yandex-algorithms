@@ -50,3 +50,19 @@ func BenchmarkSolve(b *testing.B) {
 		solve(3, 4, "allallallallalla")
 	}
 }
+
+//func BenchmarkMapInt(b *testing.B) {
+//	m := make(map[int]struct{})
+//	for i := 0; i < b.N; i++ {
+//		m[123123123123]=struct{}{}
+//	}
+//}
+//
+//
+//
+//func BenchmarkMapString(b *testing.B) {
+//	m := make(map[string]struct{})
+//	for i := 0; i < b.N; i++ {
+//		m["asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd"]=struct{}{}
+//	}
+//}
