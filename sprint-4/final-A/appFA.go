@@ -1,32 +1,3 @@
-/*
-
-посылка
-https://contest.yandex.ru/contest/24414/run-report/47293035/
-
--- ПРИНЦИП РАБОТЫ --
-	Релевантность документа для запроса - это сумма вхождений в данный документ каждого слова этого запроса.
-Если таких запросов несколько, то для каждого такого запроса мы будем итерироваться по словам одних и тех же
-документов многократно.
-	Идея алгоритма в том, чтобы единожды запомнить результаты сканирования документов.
-Это удобно сделать предварительно построив поисковый индекс - объект, который хранит информацию в разрезе слов,
-а не документов. Тогда при каждом запросе мы имеем дело уже с одним и тем же набором данных - отображением коллекции
-слов на списки документов в которые эти слова входят.
-
--- ДОКАЗАТЕЛЬСТВО КОРРЕКТНОСТИ --
-	После построения поискового индекса для каждого слова запроса нам известен список документиов
-в которых оно содержится. На основании этого легко посчитать искомую релевантность каждого документа,
-посчитав суммарное количество слов, которые входят в данный документ.
-
--- ВРЕМЕННАЯ СЛОЖНОСТЬ --
-	При построении индекса мы перебираем все слова всех документов. Сложность O(D*W), где D - общее количество
-документов, W - среднее (характерное) кол-во слов в документе. Эта процедура дорогая, но выполняется 1 раз, поэтому
-при большом количестве запросов окупается пропорционально числу запросов.
-	Сложность вычисления релевантности O(R+D*W), где R - количество запросов. Видно, что при малых R сложность
-определяется числом документов и "средней загруженностью" документа словами. При R -> ∞ сложность алгоритма
-линейна по R.
-
-*/
-
 package main
 
 import (
@@ -54,13 +25,17 @@ func main() {
 }
 
 func Solve(reader *bufio.Reader, writer io.Writer) {
-	yaReader := &YaReader{reader}
-	docs, queries := readData(yaReader)
+	scanner := bufio.NewScanner(reader)
 
 	rsw := &RelevanceSliceWriter{writer}
-	si := buildSearchIndex(docs)
-	for _, query := range queries {
-		relevanceSlice := si.queryRelevanceSlice(query)
+	si := buildSearchIndex(scanner)
+	scanner.Scan()
+	maxQueries, err := strconv.Atoi(scanner.Text())
+	check(err)
+
+	for i := 0; i < maxQueries; i++ {
+		scanner.Scan()
+		relevanceSlice := si.queryRelevanceSlice(scanner.Text())
 		rsw.writeRelevanceSlice(relevanceSlice)
 	}
 }
@@ -103,24 +78,10 @@ func (rsw *RelevanceSliceWriter) writeRelevanceSlice(rs []DocumentRelevance) {
 }
 
 func (si *SearchIndex) queryRelevanceSlice(query string) []DocumentRelevance {
-	words := uniqueWords(strings.Fields(query))
-	relevanceSlice := si.getRelevanceSlice(words)
+	relevanceSlice := si.getRelevanceSlice(query)
 	sortRelSlice(relevanceSlice)
 
 	return relevanceSlice
-}
-
-func uniqueWords(words []string) (uw []string) {
-	set := make(map[string]struct{})
-	for _, word := range words {
-		set[word] = struct{}{}
-	}
-
-	for word := range set {
-		uw = append(uw, word)
-	}
-
-	return
 }
 
 func sortRelSlice(r []DocumentRelevance) {
@@ -134,15 +95,24 @@ func sortRelSlice(r []DocumentRelevance) {
 }
 
 type SearchIndex struct {
-	index map[string][]int
+	index map[string]map[int]int
 }
 
-func (si *SearchIndex) getRelevanceSlice(words []string) []DocumentRelevance {
+func (si *SearchIndex) getRelevanceSlice(query string) []DocumentRelevance {
+	stringReader := strings.NewReader(query)
+	sc := bufio.NewScanner(stringReader)
+	sc.Split(bufio.ScanWords)
 	relevanceMap := make(map[int]int)
-	for _, word := range words {
-		includedInDocs := si.index[word]
-		for _, doc := range includedInDocs {
-			relevanceMap[doc] = relevanceMap[doc] + 1
+	uniqueWords := make(map[string]struct{})
+
+	for sc.Scan() {
+		word := sc.Text()
+		if _, has := uniqueWords[word]; !has {
+			uniqueWords[word] = struct{}{}
+			includedInDocs := si.index[word]
+			for doc, count := range includedInDocs {
+				relevanceMap[doc] = relevanceMap[doc] + count
+			}
 		}
 	}
 
@@ -157,49 +127,26 @@ func mapToRelevanceSlice(m map[int]int) (relevanceSlice []DocumentRelevance) {
 	return
 }
 
-func buildSearchIndex(docs []string) *SearchIndex {
-	searchIndex := make(map[string][]int)
+func buildSearchIndex(scanner *bufio.Scanner) *SearchIndex {
+	scanner.Scan()
+	maxDocs, err := strconv.Atoi(scanner.Text())
+	check(err)
 
-	for i, doc := range docs {
-		words := strings.Fields(doc)
+	searchIndex := make(map[string]map[int]int)
+
+	for i := 0; i < maxDocs; i++ {
+		scanner.Scan()
+		words := strings.Fields(scanner.Text())
 		for _, word := range words {
-			searchIndex[word] = append(searchIndex[word], i)
+			sw := searchIndex[word]
+			if sw == nil {
+				searchIndex[word] = make(map[int]int)
+			}
+			searchIndex[word][i] = sw[i] + 1
 		}
 	}
 
 	return &SearchIndex{searchIndex}
-}
-
-func readData(reader *YaReader) (docs []string, queries []string) {
-	a := reader.readInt()
-	for i := 0; i < a; i++ {
-		docs = append(docs, reader.readString())
-	}
-
-	m := reader.readInt()
-	for i := 0; i < m; i++ {
-		queries = append(queries, reader.readString())
-	}
-
-	return
-}
-
-type YaReader struct {
-	*bufio.Reader
-}
-
-func (reader *YaReader) readString() string {
-	line, err := reader.ReadString('\n')
-	check(err)
-	return strings.TrimRight(line, "\n")
-}
-
-func (reader *YaReader) readInt() int {
-	line, err := reader.ReadString('\n')
-	check(err)
-	res, err := strconv.Atoi(strings.TrimRight(line, "\n"))
-	check(err)
-	return res
 }
 
 type File struct {

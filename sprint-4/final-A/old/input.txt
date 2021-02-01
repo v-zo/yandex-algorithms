@@ -1,0 +1,8 @@
+3
+a a a a
+b b a a
+b b a a
+3
+a b b
+x
+z
