@@ -3,15 +3,16 @@ package main
 func siftDown(heap []int, idx int) int {
 	left := 2 * idx
 	nodesToCompare := []int{idx}
-	if left == len(heap) {
-		nodesToCompare = append(nodesToCompare, left)
-	}
-	if left < len(heap) {
+	lengthMinusOne := len(heap) - 1
+
+	if left < lengthMinusOne {
 		nodesToCompare = append(nodesToCompare, left, left+1)
+	} else if left == lengthMinusOne {
+		nodesToCompare = append(nodesToCompare, left)
 	}
 
 	if maxIdx := idxOfMax(heap, nodesToCompare...); maxIdx != idx {
-		heap[idx-1], heap[maxIdx-1] = heap[maxIdx-1], heap[idx-1]
+		heap[idx], heap[maxIdx] = heap[maxIdx], heap[idx]
 		maxIdx = siftDown(heap, maxIdx)
 		return maxIdx
 	}
@@ -22,7 +23,7 @@ func siftDown(heap []int, idx int) int {
 func idxOfMax(heap []int, idxs ...int) (maxIdx int) {
 	maxIdx = idxs[0]
 	for i := 1; i < len(idxs); i++ {
-		if heap[idxs[i]-1] > heap[maxIdx-1] {
+		if heap[idxs[i]] > heap[maxIdx] {
 			maxIdx = idxs[i]
 		}
 	}

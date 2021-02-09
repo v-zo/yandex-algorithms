@@ -18,20 +18,20 @@ type Case struct {
 func TestSolution(t *testing.T) {
 	cases := []Case{
 		{
-			Result{[]int{12, 1, 8, 3, 4, 7}, 2},
-			Result{[]int{12, 4, 8, 3, 1, 7}, 5},
+			Result{[]int{0, 12, 1, 8, 3, 4, 7}, 2},
+			Result{[]int{0, 12, 4, 8, 3, 1, 7}, 5},
 		},
 		{
-			Result{[]int{14, 50, 20, 17, 45, 10, 6, 5, 4}, 1},
-			Result{[]int{50, 45, 20, 17, 14, 10, 6, 5, 4}, 5},
+			Result{[]int{0, 14, 50, 20, 17, 45, 10, 6, 5, 4}, 1},
+			Result{[]int{0, 50, 45, 20, 17, 14, 10, 6, 5, 4}, 5},
 		},
 		{
-			Result{[]int{1}, 1},
-			Result{[]int{1}, 1},
+			Result{[]int{0, 1}, 1},
+			Result{[]int{0, 1}, 1},
 		},
 		{
-			Result{[]int{10, 2, 6, 8}, 2},
-			Result{[]int{10, 8, 6, 2}, 4},
+			Result{[]int{0, 10, 2, 6, 8}, 2},
+			Result{[]int{0, 10, 8, 6, 2}, 4},
 		},
 	}
 

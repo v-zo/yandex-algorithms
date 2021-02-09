@@ -7,8 +7,8 @@ func siftUp(heap []int, idx int) int {
 
 	parentIdx := idx / 2
 
-	if heap[parentIdx-1] < heap[idx-1] {
-		heap[idx-1], heap[parentIdx-1] = heap[parentIdx-1], heap[idx-1]
+	if heap[parentIdx] < heap[idx] {
+		heap[idx], heap[parentIdx] = heap[parentIdx], heap[idx]
 		newIdx := siftUp(heap, parentIdx)
 		return newIdx
 	}
