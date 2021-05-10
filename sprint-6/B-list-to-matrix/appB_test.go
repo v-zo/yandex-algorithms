@@ -8,7 +8,7 @@ import (
 
 func TestSolution(t *testing.T) {
 	cases := map[string]string{
-		"5 3\n1 3\n2 3\n5 2\n": "1 3\n1 3\n0\n0\n1 2\n",
+		"5 3\n1 3\n2 3\n5 2\n": "0 0 1 0 0\n0 0 1 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 1 0 0 0\n",
 	}
 
 	for k, v := range cases {
