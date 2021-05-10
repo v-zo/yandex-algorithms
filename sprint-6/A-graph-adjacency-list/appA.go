@@ -22,22 +22,12 @@ func main() {
 }
 
 func Solve(reader *bufio.Reader, writer io.Writer) {
-	yaReader := &YaReader{reader}
-
-	scanner := bufio.NewScanner(yaReader)
+	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 
-	readIntPair := func() (int, int) {
-		scanner.Scan()
-		line := scanner.Text()
-		fields := strings.Fields(line)
-		n, _ := strconv.Atoi(fields[0])
-		m, _ := strconv.Atoi(fields[1])
+	yaScanner := &YaScanner{scanner}
 
-		return n, m
-	}
-
-	n, m := readIntPair()
+	n, m := yaScanner.scanPair()
 	adjMap := make(map[int][]int)
 
 	for i := 0; i < n; i++ {
@@ -45,7 +35,7 @@ func Solve(reader *bufio.Reader, writer io.Writer) {
 	}
 
 	for i := 0; i < m; i++ {
-		dot1Plus, dot2 := readIntPair()
+		dot1Plus, dot2 := yaScanner.scanPair()
 		dot1 := dot1Plus - 1
 
 		adjMap[dot1][0] = adjMap[dot1][0] + 1
@@ -72,28 +62,19 @@ func SplitToString(a []int, sep string) string {
 	return res + "\n"
 }
 
-type YaReader struct {
-	*bufio.Reader
+type YaScanner struct {
+	*bufio.Scanner
 }
 
-//
-//func (reader *YaReader) readString() string {
-//	line, err := reader.ReadString('\n')
-//	check(err)
-//	return strings.TrimRight(line, "\n")
-//}
-//
-//func (reader *YaReader) readPair() (int, int) {
-//	line, err := reader.ReadString('\n')
-//	check(err)
-//	arr := strings.Split(line, " ")
-//	n, err := strconv.Atoi(strings.TrimRight(arr[0], "\n"))
-//	check(err)
-//	m, err := strconv.Atoi(strings.TrimRight(arr[1], "\n"))
-//	check(err)
-//
-//	return n, m
-//}
+func (scanner *YaScanner) scanPair() (int, int) {
+	scanner.Scan()
+	line := scanner.Text()
+	fields := strings.Fields(line)
+	n, _ := strconv.Atoi(fields[0])
+	m, _ := strconv.Atoi(fields[1])
+
+	return n, m
+}
 
 type File struct {
 	*os.File
