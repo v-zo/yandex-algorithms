@@ -77,6 +77,7 @@ func (adj *AdjList) DFS(v int) (res []int) {
 	}
 
 	adj.colors[v-1] = black
+	delete(adj.adjMap, v)
 
 	return
 }
@@ -88,7 +89,10 @@ type AdjList struct {
 }
 
 func NewAdjList(size int, edges [][]int) AdjList {
-	return AdjList{getAdjMap(edges), size, NewColors(size)}
+	adjMap := getAdjMap(edges)
+	colors := NewColors(size)
+
+	return AdjList{adjMap, size, colors}
 }
 
 type AdjMap map[int][]int

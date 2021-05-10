@@ -33,3 +33,18 @@ func TestSolution(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkSample(b *testing.B) {
+	edges := [][]int{
+		{3, 2},
+		{5, 4},
+		{3, 1},
+		{1, 4},
+		{1, 6},
+		{1, 2},
+		{1, 5},
+	}
+	for i := 0; i < b.N; i++ {
+		MainDFS(6, edges, 3)
+	}
+}
