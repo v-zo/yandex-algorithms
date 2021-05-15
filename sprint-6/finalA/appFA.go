@@ -55,21 +55,21 @@ func Solve(reader io.Reader, writer io.Writer) {
 type Vertex []Edge
 
 func findMST(graph Graph, start int) (totalWeight int, err error) {
-	notAdded := copyMap(graph.adjMap)
-	var mstEdges []Edge
+	notAdded := graph.adjMap
+	pq := createPriorityQueue()
 
 	addVertex := func(v int) {
 		delete(notAdded, v)
 		for _, edge := range graph.edges {
 			if edge.from == v && notAdded[edge.to] != nil {
-				mstEdges = append(mstEdges, edge)
+				heap.Push(&pq, edge)
 			}
 		}
 	}
 
 	addVertex(start)
-	for len(notAdded) > 0 && len(mstEdges) > 0 {
-		e := extractMaximum(&mstEdges)
+	for len(notAdded) > 0 && len(pq) > 0 {
+		e := heap.Pop(&pq).(*Item).value
 		if _, ok := notAdded[e.to]; ok {
 			totalWeight += e.weight
 			addVertex(e.to)
@@ -82,31 +82,6 @@ func findMST(graph Graph, start int) (totalWeight int, err error) {
 	}
 
 	return
-}
-
-func copyMap(mp map[int]Vertex) map[int]Vertex {
-	cp := make(map[int]Vertex, len(mp))
-	for index, element := range mp {
-		cp[index] = element
-	}
-
-	return cp
-}
-
-func extractMaximum(edges *[]Edge) Edge {
-	maxKey := 0
-	max := (*edges)[maxKey]
-	for key, val := range *edges {
-		if val.weight > max.weight {
-			max = val
-			maxKey = key
-		}
-	}
-
-	*edges = append((*edges)[:maxKey], (*edges)[maxKey+1:]...)
-
-	return max
-
 }
 
 type Edge struct {
@@ -122,14 +97,14 @@ type Graph struct {
 }
 
 func NewGraph(size int, edges []Edge) Graph {
-	adjMap := getAdjMap(size, edges)
+	adjMap := getAdjacencyMap(size, edges)
 
 	return Graph{adjMap, size, edges}
 }
 
 type AdjacencyMap map[int]Vertex
 
-func getAdjMap(size int, edges []Edge) AdjacencyMap {
+func getAdjacencyMap(size int, edges []Edge) AdjacencyMap {
 	m := len(edges)
 	adjMap := make(AdjacencyMap)
 	for i := 1; i <= size; i++ {
@@ -248,29 +223,19 @@ func check(err error) {
 	}
 }
 
-func createPriorityQueue(edges []Edge) PriorityQueue {
-	// Create a priority queue, put the items in it, and
-	// establish the priority queue (heap) invariants.
-	pq := make(PriorityQueue, len(edges))
-	for i, edge := range edges {
-		pq[i] = &Item{
-			value: edge,
-			index: i,
-		}
-	}
+func createPriorityQueue() PriorityQueue {
+	pq := PriorityQueue{}
 	heap.Init(&pq)
 
 	return pq
 }
 
-// An Item is something we manage in a priority queue.
 type Item struct {
 	value Edge // The value of the item; arbitrary.
 	// The index is needed by update and is maintained by the heap.Interface methods.
 	index int // The index of the item in the heap.
 }
 
-// A PriorityQueue implements heap.Interface and holds Items.
 type PriorityQueue []*Item
 
 func (pq PriorityQueue) Len() int { return len(pq) }
@@ -288,7 +253,7 @@ func (pq PriorityQueue) Swap(i, j int) {
 
 func (pq *PriorityQueue) Push(x interface{}) {
 	n := len(*pq)
-	item := x.(*Item)
+	item := &Item{x.(Edge), n}
 	item.index = n
 	*pq = append(*pq, item)
 }
@@ -301,10 +266,4 @@ func (pq *PriorityQueue) Pop() interface{} {
 	item.index = -1 // for safety
 	*pq = old[0 : n-1]
 	return item
-}
-
-// update modifies the priority and value of an Item in the queue.
-func (pq *PriorityQueue) update(item *Item, value Edge) {
-	item.value = value
-	heap.Fix(pq, item.index)
 }
