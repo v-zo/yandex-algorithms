@@ -31,49 +31,40 @@ const (
 )
 
 func Solve(reader *bufio.Reader, writer io.Writer) {
-	scanner := bufio.NewScanner(reader)
-	scanner.Split(bufio.ScanLines)
+	n, edges, start := readData(reader)
 
-	yaScanner := &YaScanner{scanner}
-
-	n, m := yaScanner.scanPair()
-
-	var edges [][]int
-	for i := 0; i < m; i++ {
-		dot1, dot2 := yaScanner.scanPair()
-		edges = append(edges, []int{dot1, dot2})
-	}
-
-	yaScanner.Scan()
-	start, _ := strconv.Atoi(yaScanner.Text())
-
-	SplitToWriter(writer, MainDFS(n, edges, start), " ")
+	SplitToWriter(writer, MainBFS(n, edges, start), " ")
 }
 
-func MainDFS(size int, edges [][]int, start int) []int {
+func MainBFS(size int, edges [][]int, start int) []int {
 	adj := NewGraph(size, edges)
-	res := &[]int{start}
+	res := &[]int{}
 	adj.BFS(start, res)
 
 	return *res
 }
 
-func (g *Graph) BFS(v int, res *[]int) {
-	g.colors[v] = gray
-	neighbours := g.adjMap[v]
+func (g *Graph) BFS(start int, res *[]int) {
+	g.colors[start] = gray
+	g.queue.Push(start)
 
-	sort.Slice(neighbours, func(i, j int) bool {
-		return neighbours[i] < neighbours[j]
-	})
+	for !g.queue.Empty() {
+		u := g.queue.Pop()
+		*res = append(*res, u)
+		g.colors[u] = black
+		neighbours := g.adjMap[u]
 
-	for _, w := range neighbours {
-		if g.colors[w] == white {
-			*res = append(*res, w)
-			g.BFS(w, res)
+		sort.Slice(neighbours, func(i, j int) bool {
+			return neighbours[i] < neighbours[j]
+		})
+
+		for _, v := range neighbours {
+			if g.colors[v] == white {
+				g.colors[v] = gray
+				g.queue.Push(v)
+			}
 		}
 	}
-
-	g.colors[v] = black
 
 	return
 }
@@ -82,28 +73,14 @@ type Graph struct {
 	adjMap AdjacencyMap
 	len    int
 	colors map[int]Color
+	queue  Queue
 }
 
 func NewGraph(size int, edges [][]int) Graph {
 	adjMap, colors := getAdjMap(edges)
+	queue := NewQueue()
 
-	return Graph{adjMap, size, colors}
-}
-
-type Queue struct {
-	ch chan int
-}
-
-func (q *Queue) Init() {
-	q.ch = make(chan int, 300)
-}
-
-func (q *Queue) Push(value int) {
-	q.ch <- value
-}
-
-func (q *Queue) Pop() int {
-	return <-q.ch
+	return Graph{adjMap, size, colors, queue}
 }
 
 type AdjacencyMap map[int][]int
@@ -128,6 +105,37 @@ func getAdjMap(edges [][]int) (AdjacencyMap, map[int]Color) {
 	}
 
 	return adjMap, colors
+}
+
+type Queue struct {
+	ch   chan int
+	size int
+}
+
+func (q *Queue) Init() {
+	q.ch = make(chan int, 100000)
+	q.size = 0
+}
+
+func (q *Queue) Push(value int) {
+	q.ch <- value
+	q.size = q.size + 1
+}
+
+func (q *Queue) Pop() int {
+	q.size = q.size - 1
+	return <-q.ch
+}
+
+func (q *Queue) Empty() bool {
+	return q.size == 0
+}
+
+func NewQueue() Queue {
+	var q Queue
+	q.Init()
+
+	return q
 }
 
 func SplitToWriter(writer io.Writer, a []int, sep string) {
@@ -156,6 +164,24 @@ func writeString(writer io.Writer, s string) {
 
 type YaScanner struct {
 	*bufio.Scanner
+}
+
+func readData(reader *bufio.Reader) (n int, edges [][]int, start int) {
+	scanner := bufio.NewScanner(reader)
+	scanner.Split(bufio.ScanLines)
+	yaScanner := &YaScanner{scanner}
+
+	n, m := yaScanner.scanPair()
+
+	for i := 0; i < m; i++ {
+		dot1, dot2 := yaScanner.scanPair()
+		edges = append(edges, []int{dot1, dot2})
+	}
+
+	yaScanner.Scan()
+	start, _ = strconv.Atoi(yaScanner.Text())
+
+	return
 }
 
 func (scanner *YaScanner) scanPair() (int, int) {

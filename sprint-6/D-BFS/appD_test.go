@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"strings"
 	"testing"
 )
 
@@ -30,29 +32,29 @@ func TestQueue(t *testing.T) {
 	}
 }
 
-//func TestSolution(t *testing.T) {
-//	cases := map[string]string{
-//		"4 4\n1 2\n2 3\n3 4\n1 4\n3": "3 2 4 1",
-//		"2 1\n2 1\n1\n":                "1 2",
-//	}
-//
-//	for k, v := range cases {
-//		sr := strings.NewReader(k)
-//		reader := bufio.NewReader(sr)
-//		var wr strings.Builder
-//		writer := bufio.NewWriter(&wr)
-//
-//		Solve(reader, writer)
-//
-//		err := writer.Flush()
-//		check(err)
-//
-//		res := strings.Trim(wr.String(), "\n")
-//		if strings.Trim(v, "\n") != res {
-//			t.Errorf("\ncase:\n%s\n got: \n%s\nwant: \n%s", k, res, v)
-//		}
-//	}
-//}
+func TestSolution(t *testing.T) {
+	cases := map[string]string{
+		"4 4\n1 2\n2 3\n3 4\n1 4\n3": "3 2 4 1",
+		"2 1\n2 1\n1\n":              "1 2",
+	}
+
+	for k, v := range cases {
+		sr := strings.NewReader(k)
+		reader := bufio.NewReader(sr)
+		var wr strings.Builder
+		writer := bufio.NewWriter(&wr)
+
+		Solve(reader, writer)
+
+		err := writer.Flush()
+		check(err)
+
+		res := strings.Trim(wr.String(), "\n")
+		if strings.Trim(v, "\n") != res {
+			t.Errorf("\ncase:\n%s\n got: \n%s\nwant: \n%s", k, res, v)
+		}
+	}
+}
 
 func BenchmarkSample(b *testing.B) {
 	edges := [][]int{
@@ -65,6 +67,6 @@ func BenchmarkSample(b *testing.B) {
 		{1, 5},
 	}
 	for i := 0; i < b.N; i++ {
-		MainDFS(6, edges, 3)
+		MainBFS(6, edges, 3)
 	}
 }
