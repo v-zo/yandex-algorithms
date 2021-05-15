@@ -18,12 +18,13 @@ import (
 	"bufio"
 	"container/heap"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 )
+
+const errorMessage = "Oops! I did it again"
 
 func main() {
 	file := openFile("input.txt")
@@ -39,25 +40,30 @@ func main() {
 }
 
 func Solve(reader io.Reader, writer io.Writer) {
-	n, edges := readData(reader)
+	n, m, edges := readData(reader)
+
+	if m == 0 {
+		writeString(writer, errorMessage)
+		return
+	}
+
 	graph := NewGraph(n, edges)
-	mst, err := findMST(graph, 1)
+	totalWeight, err := findMST(graph, 1)
+
 	if err != nil {
-		fmt.Println(err)
+		writeString(writer, err.Error())
 	} else {
-		fmt.Println(mst)
+		writeString(writer, strconv.Itoa(totalWeight))
 	}
 }
 
 type Vertex []Edge
 
-func findMST(graph Graph, start int) (mst []Edge, err error) {
-	var added []int
+func findMST(graph Graph, start int) (totalWeight int, err error) {
 	notAdded := graph.adjMap
 	var mstEdges []Edge
 
 	addVertex := func(v int) {
-		added = append(added, v)
 		delete(notAdded, v)
 		for _, edge := range graph.edges {
 			if edge.from == v && notAdded[edge.to] != nil {
@@ -70,14 +76,14 @@ func findMST(graph Graph, start int) (mst []Edge, err error) {
 	for len(notAdded) > 0 && len(mstEdges) > 0 {
 		e := extractMaximum(&mstEdges)
 		if _, ok := notAdded[e.to]; ok {
-			mst = append(mst, e)
+			totalWeight += e.weight
 			addVertex(e.to)
 		}
 	}
 
 	if len(notAdded) != 0 {
 		//goland:noinspection GoErrorStringFormat
-		err = errors.New("Oops! I did it again")
+		err = errors.New(errorMessage)
 	}
 
 	return
@@ -133,12 +139,12 @@ func getAdjMap(edges []Edge) AdjacencyMap {
 	return adjMap
 }
 
-func readData(reader io.Reader) (n int, edges []Edge) {
+func readData(reader io.Reader) (n int, m int, edges []Edge) {
 	sc := bufio.NewScanner(reader)
 	sc.Scan()
 	firstLineData := toIntArray(sc.Text(), 2)
 	n = firstLineData[0]
-	m := firstLineData[1]
+	m = firstLineData[1]
 
 	for i := 0; i < m; i++ {
 		sc.Scan()
@@ -164,6 +170,11 @@ func atoi(s string) int {
 	check(err)
 
 	return n
+}
+
+func writeString(writer io.Writer, s string) {
+	_, err := io.WriteString(writer, s)
+	check(err)
 }
 
 type File struct {
