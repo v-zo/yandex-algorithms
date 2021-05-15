@@ -51,9 +51,9 @@ func Solve(reader *bufio.Reader, writer io.Writer) {
 }
 
 func MainDFS(size int, edges [][]int, start int) []int {
-	adj := NewGraph(size, edges)
+	graph := NewGraph(size, edges)
 	res := &[]int{start}
-	adj.DFS(start, res)
+	graph.DFS(start, res)
 
 	return *res
 }
