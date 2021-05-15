@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"container/heap"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -40,15 +41,15 @@ func main() {
 }
 
 func Solve(reader io.Reader, writer io.Writer) {
-	n, m, edges := readData(reader)
-
-	if m == 0 {
-		writeString(writer, errorMessage)
-		return
-	}
+	n, _, edges := readData(reader)
 
 	graph := NewGraph(n, edges)
 	totalWeight, err := findMST(graph, 1)
+
+	for _, vertex := range graph.adjMap {
+		fmt.Print(vertex)
+		fmt.Println()
+	}
 
 	if err != nil {
 		writeString(writer, err.Error())
@@ -60,7 +61,7 @@ func Solve(reader io.Reader, writer io.Writer) {
 type Vertex []Edge
 
 func findMST(graph Graph, start int) (totalWeight int, err error) {
-	notAdded := graph.adjMap
+	notAdded := copyMap(graph.adjMap)
 	var mstEdges []Edge
 
 	addVertex := func(v int) {
@@ -87,6 +88,15 @@ func findMST(graph Graph, start int) (totalWeight int, err error) {
 	}
 
 	return
+}
+
+func copyMap(mp map[int]Vertex) map[int]Vertex {
+	cp := make(map[int]Vertex, len(mp))
+	for index, element := range mp {
+		cp[index] = element
+	}
+
+	return cp
 }
 
 func extractMaximum(edges *[]Edge) Edge {
@@ -118,16 +128,19 @@ type Graph struct {
 }
 
 func NewGraph(size int, edges []Edge) Graph {
-	adjMap := getAdjMap(edges)
+	adjMap := getAdjMap(size, edges)
 
 	return Graph{adjMap, size, edges}
 }
 
 type AdjacencyMap map[int]Vertex
 
-func getAdjMap(edges []Edge) AdjacencyMap {
+func getAdjMap(size int, edges []Edge) AdjacencyMap {
 	m := len(edges)
 	adjMap := make(AdjacencyMap)
+	for i := 1; i <= size; i++ {
+		adjMap[i] = Vertex{}
+	}
 
 	for i := 0; i < m; i++ {
 		edg := edges[i]
@@ -149,7 +162,9 @@ func readData(reader io.Reader) (n int, m int, edges []Edge) {
 	for i := 0; i < m; i++ {
 		sc.Scan()
 		ed := toIntArray(sc.Text(), 3)
-		edges = append(edges, Edge{ed[0], ed[1], ed[2]})
+		if ed[0] != ed[1] {
+			edges = append(edges, Edge{ed[0], ed[1], ed[2]})
+		}
 	}
 
 	return
