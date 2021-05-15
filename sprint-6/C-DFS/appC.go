@@ -30,15 +30,6 @@ const (
 	black
 )
 
-func NewColors(m int) []Color {
-	colors := make([]Color, m)
-	for i := 0; i < m; i++ {
-		colors[i] = white
-	}
-
-	return colors
-}
-
 func Solve(reader *bufio.Reader, writer io.Writer) {
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
@@ -62,22 +53,28 @@ func Solve(reader *bufio.Reader, writer io.Writer) {
 
 func MainDFS(size int, edges [][]int, start int) []int {
 	adj := NewAdjList(size, edges)
+	res := &[]int{start}
+	adj.DFS(start, res)
 
-	return adj.DFS(start)
+	return *res
 }
 
-func (adj *AdjList) DFS(v int) (res []int) {
-	adj.colors[v-1] = gray
-	res = append(res, v)
+func (adj *AdjList) DFS(v int, res *[]int) {
+	adj.colors[v] = gray
+	neighbours := adj.adjMap[v]
 
-	for _, w := range adj.adjMap[v] {
-		if adj.colors[w-1] == white {
-			res = append(res, adj.DFS(w)...)
+	sort.Slice(neighbours, func(i, j int) bool {
+		return neighbours[i] < neighbours[j]
+	})
+
+	for _, w := range neighbours {
+		if adj.colors[w] == white {
+			*res = append(*res, w)
+			adj.DFS(w, res)
 		}
 	}
 
-	adj.colors[v-1] = black
-	delete(adj.adjMap, v)
+	adj.colors[v] = black
 
 	return
 }
@@ -85,36 +82,37 @@ func (adj *AdjList) DFS(v int) (res []int) {
 type AdjList struct {
 	adjMap AdjMap
 	len    int
-	colors []Color
+	colors map[int]Color
 }
 
 func NewAdjList(size int, edges [][]int) AdjList {
-	adjMap := getAdjMap(edges)
-	colors := NewColors(size)
+	adjMap, colors := getAdjMap(edges)
 
 	return AdjList{adjMap, size, colors}
 }
 
 type AdjMap map[int][]int
 
-func getAdjMap(edges [][]int) AdjMap {
+func getAdjMap(edges [][]int) (AdjMap, map[int]Color) {
 	m := len(edges)
 	adjMap := make(AdjMap)
+	colors := make(map[int]Color, m)
 
 	for i := 0; i < m; i++ {
 		dot1, dot2 := edges[i][0], edges[i][1]
 
 		adjMap[dot1] = append(adjMap[dot1], dot2)
 		adjMap[dot2] = append(adjMap[dot2], dot1)
+
+		if _, ok := colors[dot1]; !ok {
+			colors[dot1] = white
+		}
+		if _, ok := colors[dot2]; !ok {
+			colors[dot2] = white
+		}
 	}
 
-	for _, v := range adjMap {
-		sort.Slice(v, func(i, j int) bool {
-			return v[i] < v[j]
-		})
-	}
-
-	return adjMap
+	return adjMap, colors
 }
 
 func SplitToString(a []int, sep string) string {
