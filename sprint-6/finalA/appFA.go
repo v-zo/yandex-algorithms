@@ -18,7 +18,6 @@ import (
 	"bufio"
 	"container/heap"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -41,15 +40,10 @@ func main() {
 }
 
 func Solve(reader io.Reader, writer io.Writer) {
-	n, _, edges := readData(reader)
+	n, edges := readData(reader)
 
 	graph := NewGraph(n, edges)
 	totalWeight, err := findMST(graph, 1)
-
-	for _, vertex := range graph.adjMap {
-		fmt.Print(vertex)
-		fmt.Println()
-	}
 
 	if err != nil {
 		writeString(writer, err.Error())
@@ -150,16 +144,18 @@ func getAdjMap(size int, edges []Edge) AdjacencyMap {
 	return adjMap
 }
 
-func readData(reader io.Reader) (n int, m int, outputEdges []Edge) {
+func readData(reader io.Reader) (n int, outputEdges []Edge) {
 	sc := bufio.NewScanner(reader)
 	sc.Scan()
 	firstLineData := toIntArray(sc.Text(), 2)
 	n = firstLineData[0]
-	m = firstLineData[1]
 
-	uniqueEdges := scanUniqueEdges(m, func() string {
-		sc.Scan()
-		return sc.Text()
+	uniqueEdges := scanUniqueEdges(func() (string, bool) {
+		if sc.Scan() {
+			return sc.Text(), true
+		} else {
+			return "", false
+		}
 	})
 
 	for _, edge := range uniqueEdges {
@@ -171,11 +167,10 @@ func readData(reader io.Reader) (n int, m int, outputEdges []Edge) {
 	return
 }
 
-func scanUniqueEdges(m int, next func() string) map[int]Edge {
-	uniqueEdges := make(map[int]Edge)
+func scanUniqueEdges(next func() (string, bool)) (uniqueEdges map[int]Edge) {
+	uniqueEdges = make(map[int]Edge)
 
-	for i := 0; i < m; i++ {
-		txt := next()
+	for txt, hasNext := next(); hasNext; txt, hasNext = next() {
 		ed := toIntArray(txt, 3)
 		hash := CantorPairingFunction(ed[0], ed[1])
 		newWeight := ed[2]
@@ -191,7 +186,7 @@ func scanUniqueEdges(m int, next func() string) map[int]Edge {
 		}
 	}
 
-	return uniqueEdges
+	return
 }
 
 func CantorPairingFunction(num1, num2 int) int {
