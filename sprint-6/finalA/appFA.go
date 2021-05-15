@@ -156,11 +156,26 @@ func readData(reader io.Reader) (n int, m int, outputEdges []Edge) {
 	firstLineData := toIntArray(sc.Text(), 2)
 	n = firstLineData[0]
 	m = firstLineData[1]
+
+	uniqueEdges := scanUniqueEdges(m, func() string {
+		sc.Scan()
+		return sc.Text()
+	})
+
+	for _, edge := range uniqueEdges {
+		outputEdges = append(outputEdges, edge)
+		revertedEdge := Edge{edge.to, edge.from, edge.weight}
+		outputEdges = append(outputEdges, revertedEdge)
+	}
+
+	return
+}
+
+func scanUniqueEdges(m int, next func() string) map[int]Edge {
 	uniqueEdges := make(map[int]Edge)
 
 	for i := 0; i < m; i++ {
-		sc.Scan()
-		txt := sc.Text()
+		txt := next()
 		ed := toIntArray(txt, 3)
 		hash := CantorPairingFunction(ed[0], ed[1])
 		newWeight := ed[2]
@@ -176,13 +191,7 @@ func readData(reader io.Reader) (n int, m int, outputEdges []Edge) {
 		}
 	}
 
-	for _, edge := range uniqueEdges {
-		outputEdges = append(outputEdges, edge)
-		revertedEdge := Edge{edge.to, edge.from, edge.weight}
-		outputEdges = append(outputEdges, revertedEdge)
-	}
-
-	return
+	return uniqueEdges
 }
 
 func CantorPairingFunction(num1, num2 int) int {
