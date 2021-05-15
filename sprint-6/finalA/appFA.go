@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -35,12 +37,48 @@ func main() {
 }
 
 func Solve(reader io.Reader, writer io.Writer) {
-	lb := readData(reader)
-	fmt.Print(lb)
+	n, edges := readData(reader)
+	fmt.Println(n)
+	fmt.Print(edges)
 }
 
-func readData(reader io.Reader) int {
-	return 0
+type Edge struct {
+	from   int
+	to     int
+	weight int
+}
+
+func readData(reader io.Reader) (n int, edges []Edge) {
+	sc := bufio.NewScanner(reader)
+	sc.Scan()
+	firstLineData := toIntArray(sc.Text(), 2)
+	n = firstLineData[0]
+	m := firstLineData[1]
+
+	for i := 0; i < m; i++ {
+		sc.Scan()
+		ed := toIntArray(sc.Text(), 3)
+		edges = append(edges, Edge{ed[0], ed[1], ed[2]})
+	}
+
+	return
+}
+
+func toIntArray(s string, size int) (res []int) {
+	lineData := strings.Split(s, " ")
+
+	for i := 0; i < size; i++ {
+		res = append(res, atoi(lineData[i]))
+	}
+
+	return
+}
+
+func atoi(s string) int {
+	n, err := strconv.Atoi(s)
+	check(err)
+
+	return n
 }
 
 type File struct {
