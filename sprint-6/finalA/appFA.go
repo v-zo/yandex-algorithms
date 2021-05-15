@@ -145,29 +145,59 @@ func getAdjMap(size int, edges []Edge) AdjacencyMap {
 	for i := 0; i < m; i++ {
 		edg := edges[i]
 		adjMap[edg.from] = append(adjMap[edg.from], edg)
-		reversedEdg := Edge{edg.to, edg.from, edg.weight}
-		adjMap[edg.to] = append(adjMap[edg.to], reversedEdg)
 	}
 
 	return adjMap
 }
 
-func readData(reader io.Reader) (n int, m int, edges []Edge) {
+func readData(reader io.Reader) (n int, m int, outputEdges []Edge) {
 	sc := bufio.NewScanner(reader)
 	sc.Scan()
 	firstLineData := toIntArray(sc.Text(), 2)
 	n = firstLineData[0]
 	m = firstLineData[1]
+	uniqueEdges := make(map[int]Edge)
 
 	for i := 0; i < m; i++ {
 		sc.Scan()
-		ed := toIntArray(sc.Text(), 3)
-		if ed[0] != ed[1] {
-			edges = append(edges, Edge{ed[0], ed[1], ed[2]})
+		txt := sc.Text()
+		ed := toIntArray(txt, 3)
+		hash := CantorPairingFunction(ed[0], ed[1])
+		newWeight := ed[2]
+
+		if edge, ok := uniqueEdges[hash]; ok {
+			if newWeight > edge.weight {
+				uniqueEdges[hash] = Edge{edge.from, edge.to, newWeight}
+			}
+		} else {
+			if ed[0] != ed[1] {
+				uniqueEdges[hash] = Edge{ed[0], ed[1], newWeight}
+			}
 		}
 	}
 
+	for _, edge := range uniqueEdges {
+		outputEdges = append(outputEdges, edge)
+		revertedEdge := Edge{edge.to, edge.from, edge.weight}
+		outputEdges = append(outputEdges, revertedEdge)
+	}
+
 	return
+}
+
+func CantorPairingFunction(num1, num2 int) int {
+	var k1, k2 int
+	if num1 < num2 {
+		k1 = num1
+		k2 = num2
+	} else {
+		k1 = num2
+		k2 = num1
+	}
+
+	num := (k1 + k2) * (k1 + k2 + 1)
+
+	return num/2 + k2
 }
 
 func toIntArray(s string, size int) (res []int) {
