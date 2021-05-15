@@ -7,8 +7,7 @@ import (
 )
 
 func TestQueue(t *testing.T) {
-	var q Queue
-	q.Init()
+	q := NewQueue()
 	expected := 2
 	q.Push(expected)
 	res := q.Pop()
@@ -17,7 +16,7 @@ func TestQueue(t *testing.T) {
 		t.Errorf("\ncase:\n%d\n got: \n%d\nwant: \n%d", expected, res, expected)
 	}
 
-	q.Init()
+	q = NewQueue()
 	q.Push(242)
 	q.Push(11)
 

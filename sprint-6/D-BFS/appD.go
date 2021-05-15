@@ -108,34 +108,35 @@ func getAdjMap(edges [][]int) (AdjacencyMap, map[int]Color) {
 }
 
 type Queue struct {
-	ch   chan int
-	size int
-}
-
-func (q *Queue) Init() {
-	q.ch = make(chan int, 100000)
-	q.size = 0
+	ch chan int
 }
 
 func (q *Queue) Push(value int) {
+	if len(q.ch) == cap(q.ch) {
+		newChan := make(chan int, 2*len(q.ch))
+		for !q.Empty() {
+			el := q.Pop()
+			newChan <- el
+		}
+
+		q.ch = newChan
+	}
+
 	q.ch <- value
-	q.size = q.size + 1
 }
 
 func (q *Queue) Pop() int {
-	q.size = q.size - 1
 	return <-q.ch
 }
 
 func (q *Queue) Empty() bool {
-	return q.size == 0
+	return len(q.ch) == 0
 }
 
 func NewQueue() Queue {
-	var q Queue
-	q.Init()
+	ch := make(chan int, 1)
 
-	return q
+	return Queue{ch}
 }
 
 func SplitToWriter(writer io.Writer, a []int, sep string) {
