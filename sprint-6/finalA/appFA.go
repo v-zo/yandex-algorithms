@@ -43,7 +43,7 @@ func Solve(reader io.Reader, writer io.Writer) {
 	n, edges := readData(reader)
 
 	graph := NewGraph(n, edges)
-	totalWeight, err := findMST(graph, 1)
+	totalWeight, err := findMST(graph)
 
 	if err != nil {
 		writeString(writer, err.Error())
@@ -54,9 +54,9 @@ func Solve(reader io.Reader, writer io.Writer) {
 
 type Vertex []Edge
 
-func findMST(graph Graph, start int) (totalWeight int, err error) {
+func findMST(graph Graph) (totalWeight int, err error) {
 	notAdded := graph.adjMap
-	pq := createPriorityQueue()
+	pq := PriorityQueue{}
 
 	addVertex := func(v int) {
 		delete(notAdded, v)
@@ -67,7 +67,7 @@ func findMST(graph Graph, start int) (totalWeight int, err error) {
 		}
 	}
 
-	addVertex(start)
+	addVertex(1)
 	for len(notAdded) > 0 && len(pq) > 0 {
 		e := heap.Pop(&pq).(*Item).value
 		if _, ok := notAdded[e.to]; ok {
@@ -92,14 +92,13 @@ type Edge struct {
 
 type Graph struct {
 	adjMap AdjacencyMap
-	size   int
 	edges  []Edge
 }
 
 func NewGraph(size int, edges []Edge) Graph {
 	adjMap := getAdjacencyMap(size, edges)
 
-	return Graph{adjMap, size, edges}
+	return Graph{adjMap, edges}
 }
 
 type AdjacencyMap map[int]Vertex
@@ -221,13 +220,6 @@ func check(err error) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func createPriorityQueue() PriorityQueue {
-	pq := PriorityQueue{}
-	heap.Init(&pq)
-
-	return pq
 }
 
 type Item struct {

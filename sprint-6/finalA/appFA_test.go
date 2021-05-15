@@ -50,6 +50,6 @@ func BenchmarkSample(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, _ = findMST(graph, n)
+		_, _ = findMST(graph)
 	}
 }
