@@ -47,66 +47,65 @@ func Solve(reader *bufio.Reader, writer io.Writer) {
 	yaScanner.Scan()
 	start, _ := strconv.Atoi(yaScanner.Text())
 
-	outLine := SplitToString(MainDFS(n, edges, start), " ")
-	io.WriteString(writer, outLine)
+	SplitToWriter(writer, MainDFS(n, edges, start), " ")
 }
 
 func MainDFS(size int, edges [][]int, start int) []int {
-	adj := NewAdjList(size, edges)
+	adj := NewGraph(size, edges)
 	res := &[]int{start}
 	adj.DFS(start, res)
 
 	return *res
 }
 
-func (adj *AdjList) DFS(v int, res *[]int) {
-	adj.colors[v] = gray
-	neighbours := adj.adjMap[v]
+func (g *Graph) DFS(v int, res *[]int) {
+	g.colors[v] = gray
+	neighbours := g.adjMap[v]
 
 	sort.Slice(neighbours, func(i, j int) bool {
 		return neighbours[i] < neighbours[j]
 	})
 
 	for _, w := range neighbours {
-		if adj.colors[w] == white {
+		if g.colors[w] == white {
 			*res = append(*res, w)
-			adj.DFS(w, res)
+			g.DFS(w, res)
 		}
 	}
 
-	adj.colors[v] = black
+	g.colors[v] = black
 
 	return
 }
 
-type AdjList struct {
-	adjMap AdjMap
+type Graph struct {
+	adjMap AdjacencyMap
 	len    int
 	colors map[int]Color
 }
 
-func NewAdjList(size int, edges [][]int) AdjList {
+func NewGraph(size int, edges [][]int) Graph {
 	adjMap, colors := getAdjMap(edges)
 
-	return AdjList{adjMap, size, colors}
+	return Graph{adjMap, size, colors}
 }
 
-type AdjMap map[int][]int
+type AdjacencyMap map[int][]int
 
-func getAdjMap(edges [][]int) (AdjMap, map[int]Color) {
+func getAdjMap(edges [][]int) (AdjacencyMap, map[int]Color) {
 	m := len(edges)
-	adjMap := make(AdjMap)
+	adjMap := make(AdjacencyMap)
 	colors := make(map[int]Color, m)
 
 	for i := 0; i < m; i++ {
 		dot1, dot2 := edges[i][0], edges[i][1]
 
 		adjMap[dot1] = append(adjMap[dot1], dot2)
-		adjMap[dot2] = append(adjMap[dot2], dot1)
-
 		if _, ok := colors[dot1]; !ok {
 			colors[dot1] = white
 		}
+
+		adjMap[dot2] = append(adjMap[dot2], dot1)
 		if _, ok := colors[dot2]; !ok {
 			colors[dot2] = white
 		}
@@ -115,18 +114,28 @@ func getAdjMap(edges [][]int) (AdjMap, map[int]Color) {
 	return adjMap, colors
 }
 
-func SplitToString(a []int, sep string) string {
+func SplitToWriter(writer io.Writer, a []int, sep string) {
 	if len(a) == 0 {
-		return ""
+		return
 	}
 
-	b := make([]string, len(a))
-	for i, v := range a {
-		b[i] = strconv.Itoa(v)
+	writeNumber(writer, a[0])
+	for i := 1; i < len(a); i++ {
+		writeString(writer, sep)
+		writeNumber(writer, a[i])
 	}
 
-	res := strings.Join(b, sep)
-	return res + "\n"
+	writeString(writer, "\n")
+}
+
+func writeNumber(writer io.Writer, num int) {
+	s := strconv.Itoa(num)
+	writeString(writer, s)
+}
+
+func writeString(writer io.Writer, s string) {
+	_, err := io.WriteString(writer, s)
+	check(err)
 }
 
 type YaScanner struct {
